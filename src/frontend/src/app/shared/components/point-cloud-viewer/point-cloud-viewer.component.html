@@ -1,0 +1,233 @@
+<div class="point-cloud-container">
+  <!-- Top control bar -->
+  <div class="viewer-toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">View</span>
+      <button 
+        [class.active]="viewMode === '3d'"
+        (click)="setViewMode('3d')"
+        title="3D view"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-cube"></use>
+        </svg>
+        <span>3D</span>
+      </button>
+      <button 
+        [class.active]="viewMode === 'top'"
+        (click)="setViewMode('top')"
+        title="Plan view"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-grid"></use>
+        </svg>
+        <span>Plan</span>
+      </button>
+      <button 
+        [class.active]="viewMode === 'side'"
+        (click)="setViewMode('side')"
+        title="Section (E-W) view"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-sidebar"></use>
+        </svg>
+        <span>Section (E-W)</span>
+      </button>
+      <button 
+        [class.active]="viewMode === 'front'"
+        (click)="setViewMode('front')"
+        title="Section (N-S) view"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-layout"></use>
+        </svg>
+        <span>Section (N-S)</span>
+      </button>
+    </div>
+
+    <div class="toolbar-group">
+      <span class="toolbar-label">Color</span>
+      <button 
+        [class.active]="colorMode === 'rgb'"
+        (click)="applyColorMode('rgb')"
+        title="RGB colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-image"></use>
+        </svg>
+        <span>RGB</span>
+      </button>
+      <button 
+        [class.active]="colorMode === 'height'"
+        (click)="applyColorMode('height')"
+        title="Elevation colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-trending-up"></use>
+        </svg>
+        <span>Elevation</span>
+      </button>
+      <button 
+        [class.active]="colorMode === 'intensity'"
+        (click)="applyColorMode('intensity')"
+        title="Intensity colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-zap"></use>
+        </svg>
+        <span>Intensity</span>
+      </button>
+      <button 
+        [class.active]="colorMode === 'classification'"
+        (click)="applyColorMode('classification')"
+        title="Classification colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <use href="#icon-list"></use>
+        </svg>
+        <span>Class</span>
+      </button>
+    </div>
+
+    <div class="toolbar-group">
+      <span class="toolbar-label">Point Size</span>
+      <div class="range-slider">
+        <input 
+          type="range" 
+          min="0.1" 
+          max="5" 
+          step="0.1" 
+          [value]="pointSize"
+          (input)="onPointSizeChanged($event)" 
+        />
+        <span class="range-value">{{pointSize}}</span>
+      </div>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="screenshot-btn" (click)="exportScreenshot()" title="Save Screenshot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Left panel (when classification view is active) -->
+  <div class="classification-panel" *ngIf="colorMode === 'classification'">
+    <div class="panel-header">
+      <h3>Classifications</h3>
+    </div>
+    <div class="class-list">
+      <div 
+        *ngFor="let item of classificationCount | keyvalue" 
+        class="class-item" 
+        [class.active]="showClassification[+item.key]"
+      >
+        <label class="class-checkbox">
+          <input 
+            type="checkbox" 
+            [checked]="showClassification[+item.key]"
+            (change)="toggleClassification(+item.key)" 
+          />
+          <span class="class-color" [style.background-color]="getClassColor(+item.key)"></span>
+          <span class="class-name">
+            {{ getClassificationName(+item.key) }} ({{ item.value | number }})
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main viewer container -->
+  <div class="renderer-container" #rendererContainer>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="loader-spinner"></div>
+      <div class="loading-text">
+        Loading point cloud...
+        <span class="loading-progress">{{ loadingProgress | number:'1.0-0' }}%</span>
+      </div>
+    </div>
+
+    <!-- Error message with more helpful instructions -->
+    <div class="error-message" *ngIf="error">
+      <div class="error-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="error-text">{{ error }}</div>
+      <div class="error-help" *ngIf="error.includes('No file')">
+        <p>Please upload a point cloud file to view it.</p>
+        <p>Supported formats: LAS, LAZ, E57, PLY, PCD, TIF, TIFF</p>
+      </div>
+    </div>
+    
+    <!-- Show file name overlay -->
+    <div class="filename-overlay" *ngIf="fileName && !error && !isLoading">
+      {{ fileName }}
+    </div>
+  </div>
+
+  <!-- Bottom status bar -->
+  <div class="status-bar">
+    <div class="stats">
+      <span class="stat-item">Points: {{ pointCount | number }}</span>
+      <span class="stat-item" *ngIf="pointCloudStats?.bounds">
+        Size: {{ getMeasurements() }}
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- SVG Icons -->
+<svg style="display: none;">
+  <defs>
+    <g id="icon-cube">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+    </g>
+    <g id="icon-grid">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="3" y1="9" x2="21" y2="9"></line>
+      <line x1="3" y1="15" x2="21" y2="15"></line>
+      <line x1="9" y1="3" x2="9" y2="21"></line>
+      <line x1="15" y1="3" x2="15" y2="21"></line>
+    </g>
+    <g id="icon-sidebar">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="9" y1="3" x2="9" y2="21"></line>
+    </g>
+    <g id="icon-layout">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="3" y1="9" x2="21" y2="9"></line>
+      <line x1="9" y1="21" x2="9" y2="9"></line>
+    </g>
+    <g id="icon-image">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+      <polyline points="21 15 16 10 5 21"></polyline>
+    </g>
+    <g id="icon-trending-up">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+      <polyline points="17 6 23 6 23 12"></polyline>
+    </g>
+    <g id="icon-zap">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    </g>
+    <g id="icon-list">
+      <line x1="8" y1="6" x2="21" y2="6"></line>
+      <line x1="8" y1="12" x2="21" y2="12"></line>
+      <line x1="8" y1="18" x2="21" y2="18"></line>
+      <line x1="3" y1="6" x2="3.01" y2="6"></line>
+      <line x1="3" y1="12" x2="3.01" y2="12"></line>
+      <line x1="3" y1="18" x2="3.01" y2="18"></line>
+    </g>
+  </defs>
+</svg>

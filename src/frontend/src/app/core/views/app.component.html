@@ -1,0 +1,273 @@
+<neo4j-header
+  (openChat)="showChat = true"
+  (openLidarMenu)="toggleLidarMenu()"
+></neo4j-header>
+
+<!-- Remove the toggle-view div -->
+<router-outlet></router-outlet>
+
+<neo4j-footer></neo4j-footer>
+
+<!-- LIDAR upload side menu, now global -->
+<div *ngIf="showLidarMenu" class="side-menu-backdrop" [class.active]="showLidarMenu" (click)="closeSideMenu()"></div>
+<div *ngIf="showLidarMenu" class="side-menu" [class.active]="showLidarMenu">
+  <div class="side-menu-header">
+    <h3>Archaios</h3>
+    <button class="close-btn" (click)="showLidarMenu = false">✕</button>
+  </div>
+
+  <div class="menu-navigation">
+    <a class="nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeSideMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      </svg>
+      <span>Home</span>
+    </a>
+    <a class="nav-item" routerLink="/about" routerLinkActive="active" (click)="closeSideMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 16v-4"/>
+        <path d="M12 8h.01"/>
+      </svg>
+      <span>About</span>
+    </a>
+    <a class="nav-item" routerLink="/leaderboard" routerLinkActive="active" (click)="closeSideMenu()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 20V10"/>
+        <path d="M18 20V4"/>
+        <path d="M6 20v-4"/>
+      </svg>
+      <span>Leaderboard</span>
+    </a>
+  </div>
+
+
+  <!-- Keep existing LIDAR upload area -->
+  <div class="lidar-upload-area"
+       (dragover)="dragOver = true; $event.preventDefault()"
+       (dragleave)="dragOver = false"
+       (drop)="dragOver = false; onLidarDrop($event)">
+    <div [class.dragover]="dragOver">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#bfa76a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+
+      <!-- Hidden file input for lidar files -->
+      <input #lidarInput type="file" accept=".las,.laz,.csv,.e57,.tif,.tiff" multiple style="display:none" (change)="onFileSelected($event)" />
+
+      <!-- Show file name and coordinate inputs when a file is selected -->
+      <div *ngIf="selectedFiles.length > 0; else uploadPrompt" class="selected-file">
+        <div class="file-info">
+          <div *ngIf="selectedFiles.length === 1">
+            <span class="file-name">{{ selectedFiles[0].name }}</span>
+            <span class="file-size">{{ (selectedFiles[0].size / 1024 / 1024).toFixed(2) }} MB</span>
+          </div>
+          <div *ngIf="selectedFiles.length > 1">
+            <span class="file-count">{{ selectedFiles.length }} files selected</span>
+            <div class="file-list">
+              <div *ngFor="let file of selectedFiles" class="file-item">
+                <span class="file-name">{{ file.name }}</span>
+                <span class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="coordinates-input">
+          <h4>Location Coordinates <span class="optional">(Optional)</span></h4>
+          <div class="coordinate-fields">
+            <div class="coordinate-field">
+              <label for="latitude">Latitude</label>
+              <input 
+                type="number" 
+                id="latitude" 
+                step="0.000001" 
+                placeholder="e.g. 41.902782 (Optional)" 
+                [value]="latitude || ''"
+                (input)="onLatitudeChange($event)"
+                class="coordinate-input"
+              />
+            </div>
+            <div class="coordinate-field">
+              <label for="longitude">Longitude</label>
+              <input 
+                type="number" 
+                id="longitude" 
+                step="0.000001" 
+                placeholder="e.g. 12.496366 (Optional)"
+                [value]="longitude || ''"
+                (input)="onLongitudeChange($event)"
+                class="coordinate-input"
+              />
+            </div>
+          </div>
+          <p class="coordinate-hint">Specify the geographical location of this data (defaults to 0.0 if not provided)</p>
+        </div>
+        
+        <div class="file-actions">
+          <button class="process-btn" [disabled]="!areCoordinatesValid" (click)="onProcessFile()">Process</button>
+          <button class="customize-btn" [disabled]="!areCoordinatesValid" (click)="onCustomizeLidar()">Customize</button>
+          <button class="browse-again-btn" (click)="onBrowseLidarFile()">Change File</button>
+        </div>
+      </div>
+
+      <!-- Upload prompt when no file is selected -->
+      <ng-template #uploadPrompt>
+        <div class="lidar-upload-text">
+          <strong>Drag & drop your LiDAR data</strong>
+          <span>or</span>
+          <button class="upload-now-btn" (click)="onBrowseLidarFile()">Browse Files</button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+    <div class="menu-divider"></div>
+  
+  <div class="recent-imports">
+    <h4>Recent Imports</h4>
+    <ng-container *ngIf="recentUploads && recentUploads.length > 0">
+      <div class="import-item" *ngFor="let upload of recentUploads.slice(0, 3)" (click)="openRecentFile(upload)">
+        <div class="import-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="import-details">
+          <div class="import-name">{{ upload.name }}</div>
+          <div class="import-date">{{ upload.lastUpdated | date:'MMM d, yyyy' }}</div>
+        </div>
+      </div>
+    </ng-container>
+    
+    <div class="empty-imports" *ngIf="!recentUploads || recentUploads.length === 0">
+      <p>No recent uploads yet</p>
+    </div>
+  </div>
+</div>
+
+<!-- Floating chat button -->
+<button class="floating-chat-btn" title="Chat with Archaios LLM" (click)="onChatClick()">
+  <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+</button>
+
+<!-- Chat modal backdrop -->
+<div *ngIf="showChat" class="chat-modal-backdrop" (click)="showChat = false"></div>
+
+<!-- Use our chat component with correct event binding -->
+<app-chat 
+  *ngIf="showChat" 
+  [isFullscreen]="isFullscreenChat"
+  (closeChat)="showChat = false"
+  (toggleFullscreen)="toggleFullscreenChat()"
+></app-chat>
+
+<div class="upload-backdrop" *ngIf="isUploading"></div>
+
+<div class="processing-notification" *ngIf="activeNotification"
+     [class.complete]="activeNotification.isComplete"
+     [class.error]="activeNotification.isError">
+  <div class="notification-content">
+    <div class="notification-icon">
+      <!-- Loading spinner for processing -->
+      <svg *ngIf="!activeNotification.isComplete && !activeNotification.isError" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" 
+              stroke-width="2">
+          <animateTransform attributeName="transform" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite"/>
+        </path>
+      </svg>
+      <!-- Success checkmark -->
+      <svg *ngIf="activeNotification.isComplete && !activeNotification.isError" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <!-- Error X -->
+      <svg *ngIf="activeNotification.isError" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M15 9l-6 6M9 9l6 6"/>
+      </svg>
+    </div>
+    <div class="notification-text">
+      <span>{{ activeNotification.message }}</span>
+      
+      <!-- Add current file info -->
+      <div class="file-progress-info" *ngIf="currentFileInfo && isUploading">
+        <span class="current-file-info">
+          Processing file {{ currentFileInfo.currentIndex }} of {{ currentFileInfo.totalFiles }}: 
+          {{ currentFileInfo.currentFile }}
+        </span>
+      </div>
+      
+      <div class="progress-bar" *ngIf="isUploading">
+        <div class="progress" [style.width.%]="uploadProgress"></div>
+        <span class="progress-text">{{ uploadProgress.toFixed(0) }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add the LIDAR wizard modal -->
+<app-lidar-wizard 
+  *ngIf="showWizard" 
+  [selectedFile]="selectedFile" 
+  (close)="showWizard = false"
+  (processFile)="onProcessWithOptions($event)">
+</app-lidar-wizard>
+
+
+<div class="upload-backdrop" *ngIf="isUploading"></div>
+
+<div class="processing-notification" *ngIf="activeNotification"
+     [class.complete]="activeNotification.isComplete"
+     [class.error]="activeNotification.isError">
+  <div class="notification-content">
+    <div class="notification-icon">
+      <!-- Loading spinner for processing -->
+      <svg *ngIf="!activeNotification.isComplete && !activeNotification.isError" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" 
+              stroke-width="2">
+          <animateTransform attributeName="transform" type="rotate" dur="1s" from="0 12 12" to="360 12 12" repeatCount="indefinite"/>
+        </path>
+      </svg>
+      <!-- Success checkmark -->
+      <svg *ngIf="activeNotification.isComplete && !activeNotification.isError" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <!-- Error X -->
+      <svg *ngIf="activeNotification.isError" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M15 9l-6 6M9 9l6 6"/>
+      </svg>
+    </div>
+    <div class="notification-text">
+      <span>{{ activeNotification.message }}</span>
+      
+      <!-- Add current file info -->
+      <div class="file-progress-info" *ngIf="currentFileInfo && isUploading">
+        <span class="current-file-info">
+          Processing file {{ currentFileInfo.currentIndex }} of {{ currentFileInfo.totalFiles }}: 
+          {{ currentFileInfo.currentFile }}
+        </span>
+      </div>
+      
+      <div class="progress-bar" *ngIf="isUploading">
+        <div class="progress" [style.width.%]="uploadProgress"></div>
+        <span class="progress-text">{{ uploadProgress.toFixed(0) }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add the LIDAR wizard modal -->
+<app-lidar-wizard 
+  *ngIf="showWizard" 
+  [selectedFile]="selectedFile" 
+  (close)="showWizard = false"
+  (processFile)="onProcessWithOptions($event)">
+</app-lidar-wizard>

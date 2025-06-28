@@ -1,0 +1,66 @@
+<div class="viewer-container" 
+     [class.loading]="isLoading"
+     #container>
+  
+  <div class="loader" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <div class="progress" *ngIf="totalPoints > 0">
+      Loading points: {{ pointsLoaded | number }} / {{ totalPoints | number }}
+    </div>
+    <div class="progress" *ngIf="totalPoints === 0">
+      Loading data...
+    </div>
+  </div>
+  
+  <div class="error-message" *ngIf="error">
+    {{ error }}
+  </div>
+  
+  <div class="viewer-toolbar">
+    <button title="Zoom In" (click)="zoomIn()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="16"></line>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+    </button>
+    <button title="Zoom Out" (click)="zoomOut()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+    </button>
+    <button title="Reset View" (click)="resetView()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9z"></path>
+        <path d="M12 8v4l3 3"></path>
+      </svg>
+    </button>
+  </div>
+  
+  <div class="viewer-scroll-indicator" *ngIf="showScrollIndicator">
+    <div class="scroll-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M6 11l6 6 6-6"/>
+      </svg>
+    </div>
+    <span>Scroll to explore</span>
+  </div>
+  
+  <div class="viewer-footer">
+    <div class="info-panel">
+      <div class="file-info">
+        <span class="file-type">{{ fileType.toUpperCase() }}</span>
+        <span class="file-name">{{ getFileName() }}</span>
+      </div>
+      <div class="coordinates" *ngIf="currentCoords">
+        <span>{{ currentCoords }}</span>
+      </div>
+    </div>
+    <div class="archaeology-watermark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#bfa76a" stroke-width="1.5" opacity="0.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+  </div>
+</div>

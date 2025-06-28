@@ -1,0 +1,97 @@
+<div class="notifications-page">
+  <div class="header">
+    <h1>Archaeological Updates</h1>
+    <div class="filters">
+      <button [class.active]="currentFilter === 'all'" (click)="filterNotifications('all')">All</button>
+      <button [class.active]="currentFilter === 'discovery'" (click)="filterNotifications('discovery')">Discoveries</button>
+      <button [class.active]="currentFilter === 'analysis'" (click)="filterNotifications('analysis')">Analysis</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <!-- System Notifications List -->
+    <section class="notifications-section">
+      <h2 class="section-title">System Notifications</h2>
+      <div class="notifications-list">
+        <div class="notification-card" *ngFor="let notification of notifications" 
+             [class.unread]="!notification.read"
+             (click)="markAsRead(notification.id)">
+          <div class="notification-icon" [class]="notification.type">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path [attr.d]="getIconPath(notification.type)"/>
+            </svg>
+          </div>
+          <div class="notification-content">
+            <h3>{{ notification.title }}</h3>
+            <p>{{ notification.message }}</p>
+            <span class="timestamp">{{ notification.timestamp | date:'medium' }}</span>
+          </div>
+          <div class="notification-priority" [class]="notification.priority">
+            <span class="dot"></span>
+          </div>
+        </div>
+        
+        <!-- Empty state for notifications -->
+        <div class="empty-state" *ngIf="notifications.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <h3>No notifications yet</h3>
+          <p>We'll notify you here when there are updates about your archaeological sites and discoveries.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Activities Section - similar to profile -->
+    <section class="activities-section">
+      <h2 class="section-title">Recent Activities</h2>
+      
+      <!-- Loading state for activities -->
+      <div class="loading-state" *ngIf="loadingActivities">
+        <div class="artifact-spinner">
+          <div class="spinner-artifact"></div>
+          <div class="spinner-ring"></div>
+        </div>
+        <p>Excavating your activities...</p>
+      </div>
+      
+      <!-- Error state for activities -->
+      <div class="error-state" *ngIf="activityError">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>{{ activityError }}</p>
+        <button (click)="retryLoadingActivities()" class="retry-btn">Try Again</button>
+      </div>
+      
+      <!-- Activities list -->
+      <div class="activity-timeline" *ngIf="!loadingActivities && !activityError">
+        <div class="activity-item" *ngFor="let activity of recentActivities">
+          <div class="activity-icon" [class]="activity.type">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path [attr.d]="getActivityIconPath(activity.type)"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <h3>{{ activity.title }}</h3>
+            <p>{{ activity.description }}</p>
+            <span class="activity-date">{{ formatDate(activity.date) }}</span>
+          </div>
+        </div>
+        
+        <!-- Empty state for activities -->
+        <div class="empty-state" *ngIf="recentActivities.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <h3>No recent activities</h3>
+          <p>Start analyzing archaeological sites to see your activities here.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

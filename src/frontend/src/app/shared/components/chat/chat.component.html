@@ -1,0 +1,125 @@
+<div class="chat-modal" [class.fullscreen]="isFullscreen">
+  <div class="chat-modal-header">
+    <div class="chat-title">
+      <div class="chat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+     
+    </div>
+    <div class="header-actions">
+      <!-- Update to call the new method without passing the event -->
+      <button class="chat-fullscreen-toggle" title="Toggle fullscreen" (click)="onToggleFullscreen()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" *ngIf="!isFullscreen"/>
+          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" *ngIf="isFullscreen"/>
+        </svg>
+      </button>
+      <button class="close-btn" title="Close chat" (click)="closeChat.emit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <div class="chat-container">
+    <!-- Left panel with chat history - visible only in fullscreen mode -->
+    <div *ngIf="isFullscreen" class="chat-sessions-panel">
+      <div class="sessions-header">
+        <h4>Conversations</h4>
+        <button class="new-chat-btn" (click)="onNewChat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>New Chat</span>
+        </button>
+      </div>
+      <div class="sessions-list">
+        <div *ngFor="let session of chatSessions" 
+             class="session-item" 
+             [class.active]="session.id === currentSessionId"
+             (click)="onSelectSession(session.id)">
+          <div class="session-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <div class="session-details">
+            <div class="session-name">{{session.name}}</div>
+            <div class="session-preview">{{session.lastMessage}}</div>
+          </div>
+          <div class="session-meta">
+            <div class="session-date">{{formatTimestamp(session.lastUpdated)}}</div>
+            <div class="session-count">{{session.messageCount}}</div>
+          </div>
+        </div>
+        
+        <div *ngIf="chatSessions.length === 0" class="no-sessions">
+          No previous conversations
+        </div>
+      </div>
+    </div>
+
+    <!-- Main chat area -->
+    <div class="chat-main">
+      <!-- Messages area -->
+      <div class="chat-modal-body" #chatMessages>
+        <div class="chat-message" *ngFor="let message of currentMessages" [ngClass]="{'bot': message.isAssistant, 'user': !message.isAssistant}">
+          <div class="message-content">
+            <div [innerHTML]="message.isAssistant ? parseMarkdown(message.content) : message.content"></div>
+            
+            <!-- For agent messages -->
+            <div *ngIf="message.agentMessages && message.agentMessages.length > 0" class="agent-responses">
+              <div *ngFor="let agentMessage of message.agentMessages" class="agent-message">
+                <div class="agent-name">{{agentMessage.agentName}} said:</div>
+                <div class="agent-content">{{agentMessage.message}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="message-meta">
+            {{message.isAssistant ? 'Archaios AI' : 'You'}} • {{formatTimestamp(message.createdAt)}}
+          </div>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="chat-loading">
+          <div class="loading-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input area -->
+      <div class="chat-modal-footer">
+        <form [formGroup]="chatForm" (ngSubmit)="onSendMessage()">
+          <div class="input-tools">
+            <button type="button" title="Clear Chat" (click)="onClearChat()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+          <input 
+            type="text" 
+            formControlName="message"
+            placeholder="Ask about archaeological features, LIDAR analysis, or site context..." 
+            [disabled]="loading"
+            autofocus
+          />
+          <button type="submit" class="send-button" [disabled]="chatForm.invalid || loading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

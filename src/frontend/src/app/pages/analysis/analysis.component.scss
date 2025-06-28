@@ -1,0 +1,329 @@
+.analysis-scroll-container {
+  height: 100vh; // Change from calc(70vh) to 100vh to use full viewport height
+  width: 100%;
+  overflow: hidden; // Change from auto to hidden to prevent scrolling
+  background: linear-gradient(to bottom, #f6f1e7, #fff);
+  position: relative;
+  
+  // Add the ancient papyrus texture to the whole page
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23bfa76a' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+  
+  // Custom scrollbar styling
+  scrollbar-width: thin;
+  scrollbar-color: #bfa76a #f9f6f0;
+  
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f9f6f0;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #bfa76a;
+    border-radius: 10px;
+    border: 3px solid #f9f6f0;
+  }
+  
+  // Load animation
+  animation: fadeIn 0.5s ease;
+}
+
+// Analysis content container
+.analysis-content {
+  padding: 1rem 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100%;
+}
+
+.analysis-page {
+  // Remove min-height and padding from here as we have it in the parent containers
+  background: transparent;
+  height: 100%;
+  overflow-y: auto;
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      color: #3e2c18;
+      font-size: 2.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .category-filters {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+
+      button {
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(191, 167, 106, 0.3);
+        background: #fff;
+        color: #8b6b35;
+        font-family: 'Georgia', serif;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: rgba(191, 167, 106, 0.1);
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #bfa76a, #8b6b35);
+          color: #fff;
+          border: none;
+        }
+      }
+    }
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .tool-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      border: 1px solid rgba(191, 167, 106, 0.2);
+      box-shadow: 0 4px 24px rgba(191, 167, 106, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(191, 167, 106, 0.15);
+      }
+
+      .tool-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(191, 167, 106, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #8b6b35;
+
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+
+        &.processing { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        &.offline { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; }
+      }
+
+      .tool-info {
+        h3 {
+          color: #3e2c18;
+          font-family: 'Cinzel', serif;
+          font-size: 1.2rem;
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          color: #8b6b35;
+          font-size: 0.9rem;
+          margin-bottom: 1rem;
+        }
+
+        .status-badge {
+          display: inline-block;
+          padding: 0.3rem 0.8rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          
+          &.available { background: rgba(75, 181, 67, 0.1); color: #4bb543; }
+          &.processing { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+          &.offline { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; }
+        }
+      }
+
+      .launch-btn {
+        margin-top: auto;
+        padding: 0.8rem;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #bfa76a, #8b6b35);
+        color: #fff;
+        border: none;
+        font-family: 'Georgia', serif;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(191, 167, 106, 0.2);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  .viewer-section {
+    margin-bottom: 2rem;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    
+    .viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(90deg, #a68c4a, #bfa76a);
+      
+      h2 {
+        color: white;
+        font-family: 'Cinzel', serif;
+        margin: 0;
+        font-size: 1.4rem;
+      }
+      
+      .close-btn {
+        background: transparent;
+        color: white;
+        border: none;
+        font-size: 1.8rem;
+        line-height: 1;
+        cursor: pointer;
+        height: 32px;
+        width: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      }
+    }
+  }
+
+  .tool-formats {
+    margin: 0.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    
+    .format-tag {
+      font-size: 0.7rem;
+      background: #f9f6f0;
+      border: 1px solid #e0d4c0;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      color: #8b6b35;
+      text-transform: uppercase;
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+.full-page-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; // Use full viewport height
+  width: 100%;
+  position: absolute; // Position absolutely to cover everything
+  top: 0;
+  left: 0;
+  z-index: 10; // Ensure it's on top
+  background-color: #fff; // Add background so it covers other content
+  
+  .viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: #f9f6f0;
+    border-bottom: 1px solid #e0d4c0;
+    
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: #8b6b35;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    .viewer-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      
+      .upload-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #bfa76a;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s;
+        
+        svg {
+          width: 18px;
+          height: 18px;
+          stroke: currentColor;
+        }
+        
+        &:hover {
+          background-color: #a68c4a;
+        }
+      }
+      
+      .close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid #e0d4c0;
+        background: white;
+        color: #8b6b35;
+        font-size: 1.5rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+          background-color: #8b6b35;
+          color: white;
+        }
+      }
+    }
+  }
+  
+  app-point-cloud-viewer,
+  app-geospatial-viewer {
+    flex-grow: 1;
+    height: calc(100vh - 64px); /* Adjust for header height */
+    width: 100%;
+  }
+}

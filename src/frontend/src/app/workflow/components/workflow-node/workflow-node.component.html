@@ -1,0 +1,16 @@
+<div class="workflow-node" [ngClass]="node.type">
+  <div class="node-header">
+    <span class="node-icon">{{ node.icon }}</span>
+    <span class="node-title">{{ node.title }}</span>
+  </div>
+  <div class="node-body">
+    <ng-container [ngSwitch]="node.type">
+      <archaios-satellite-analyzer *ngSwitchCase="'satellite'"></archaios-satellite-analyzer>
+      <archaios-noise-remover *ngSwitchCase="'noise-remover'"></archaios-noise-remover>
+      <archaios-history-mapper *ngSwitchCase="'history-mapper'"></archaios-history-mapper>
+      <archaios-feature-detector *ngSwitchCase="'feature-detector'"></archaios-feature-detector>
+      <archaios-custom-script *ngSwitchCase="'custom-script'"></archaios-custom-script>
+      <!-- Add more node types here -->
+    </ng-container>
+  </div>
+</div>

@@ -1,0 +1,144 @@
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="cover-pattern"></div>
+    <div class="profile-info" *ngIf="user$ | async as user; else defaultProfile">
+      <img [src]="user.photoUrl || defaultUser.avatar" [alt]="user.name" class="profile-avatar">
+      <div class="profile-details">
+        <h1>{{ user.name }}</h1>
+        <p class="profile-email">{{ user.username }}</p>
+        <div class="profile-badges">
+          <span class="role-badge">{{ user.role }}</span>
+          <span class="rank-badge">Senior Researcher</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-content" *ngIf="user$ | async as userData">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="stat-value">{{ userStats?.discoveries?.length || 0 }}</div>
+        <div class="stat-label">Discoveries</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div class="stat-value">{{ getTotalSitesAnalyzed() }}</div>
+        <div class="stat-label">Sites Analyzed</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-value">{{ getAverageAccuracy() }}%</div>
+        <div class="stat-label">Accuracy Rate</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-value">{{ userStats?.lastActive | date:'mediumDate' || 'N/A' }}</div>
+        <div class="stat-label">Last Active</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20v-6M6 20V10M18 20V4"/>
+          </svg>
+        </div>
+        <div class="stat-value">{{ userStats?.score || 0 }}</div>
+        <div class="stat-label">Total Score</div>
+      </div>
+    </div>
+
+    <div class="recent-activities">
+      <h2>Recent Activities</h2>
+      <div class="activity-timeline" *ngIf="!loading && userStats">
+        <div class="activity-item" *ngFor="let activity of getRecentDiscoveries()">
+          <div class="activity-icon discovery">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v8M8 12h8"/>
+            </svg>
+          </div>
+          <div class="activity-content">
+            <h3>{{ activity.title }}</h3>
+            <p>{{ activity.description }}</p>
+            <span class="activity-date">{{ activity.date | date:'mediumDate' }}</span>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="userStats && userStats.discoveries && userStats.discoveries.length === 0">
+          <p>No discoveries recorded yet. Start analyzing archaeological sites to see your activities here!</p>
+        </div>
+      </div>
+      
+      <div class="loading-state" *ngIf="loading">
+        <div class="artifact-spinner">
+          <div class="spinner-artifact"></div>
+          <div class="spinner-ring"></div>
+        </div>
+        <p>Excavating your data...</p>
+      </div>
+      
+      <div class="error-state" *ngIf="error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>{{ error }}</p>
+        <button (click)="loadUserStats()" class="retry-btn">Try Again</button>
+      </div>
+    </div>
+
+    <div class="signout-section">
+      <div class="signout-content">
+        <div class="signout-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <div class="signout-text">
+            <h3>Ready to Leave?</h3>
+            <p>You can always sign back in to continue your archaeological journey</p>
+          </div>
+        </div>
+        <button class="signout-btn" (click)="onLogout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #defaultProfile>
+  <div class="profile-info">
+    <img [src]="defaultUser.avatar" [alt]="defaultUser.name" class="profile-avatar">
+    <div class="profile-details">
+      <h1>{{ defaultUser.name }}</h1>
+      <p class="profile-email">{{ defaultUser.email }}</p>
+      <div class="profile-badges">
+        <span class="role-badge">{{ defaultUser.role }}</span>
+      </div>
+    </div>
+  </div>
+</ng-template>

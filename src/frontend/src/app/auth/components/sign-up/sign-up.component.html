@@ -1,0 +1,54 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <button class="back-btn" routerLink="/auth/signin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <h2>Join Archaios</h2>
+      <p>Begin your archaeological journey</p>
+    </div>
+
+    <div class="social-buttons">
+      <button (click)="signUpWithMicrosoft()">
+        <img class="logo" src="assets/images/microsoft.png" alt="Microsoft Logo">
+        Sign up with Microsoft
+      </button>
+      
+      <button (click)="signUpWithGoogle()">
+        <img class="logo" src="assets/images/google.svg" alt="Google Logo">
+        Sign up with Google
+      </button>
+    </div>
+
+    <div class="divider">
+      <span>or register with email</span>
+    </div>
+
+    <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" formControlName="email" placeholder="Enter your email">
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" formControlName="password" placeholder="Create a password">
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" formControlName="confirmPassword" placeholder="Confirm your password">
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="!signUpForm.valid">
+        Create Account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/auth/signin">Sign In</a></p>
+    </div>
+  </div>
+</div>

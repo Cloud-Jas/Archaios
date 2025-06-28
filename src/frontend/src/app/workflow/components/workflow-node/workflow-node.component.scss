@@ -1,0 +1,33 @@
+.workflow-node {
+  background: #fffbe6;
+  border: 2px solid #bfa76a;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(191, 167, 106, 0.15);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  min-width: 260px;
+  max-width: 350px;
+  position: relative;
+
+  .node-header {
+    display: flex;
+    align-items: center;
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+
+    .node-icon {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+    }
+    .node-title {
+      color: #8b6b35;
+      font-weight: bold;
+    }
+  }
+  .node-body {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.98rem;
+    color: #3e2c18;
+  }
+}

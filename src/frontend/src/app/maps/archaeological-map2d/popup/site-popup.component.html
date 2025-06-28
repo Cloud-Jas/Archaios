@@ -1,0 +1,662 @@
+<div class="site-popup-backdrop" *ngIf="isOpen" (click)="closeWithAnimation($event)"></div>
+
+<div class="site-popup-container" *ngIf="isOpen" [class.closing]="isClosing">
+  <div class="popup-header">
+    <div class="header-content">
+      <div class="site-icon" [class]="site.isKnownSite ? 'confirmed' : 'investigation'">
+        <svg *ngIf="site.type === 'Settlement'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 21h18M5 21V7l7-4 7 4v14"></path>
+        </svg>
+        <svg *ngIf="site.type === 'Artifact'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v6m0 0l-4 8h8l-4-8z"></path>
+          <path d="M5 21h14"></path>
+        </svg>
+        <svg *ngIf="site.type === 'Ritual'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="8"></circle>
+          <path d="M12 4v16m-8-8h16"></path>
+        </svg>
+        <svg *ngIf="!site.type || site.type === 'Unknown'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86L7.86 2z"></path>
+          <path d="M12 8v4"></path>
+          <path d="M12 16h.01"></path>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h2>{{ site.name }}</h2>
+        <span>{{ site.status || 'Archaeological Site' }}</span>
+      </div>
+    </div>
+    <button class="close-btn" (click)="closeWithAnimation($event)">✕</button>
+  </div>
+
+  <div class="popup-content">
+    <div class="wizard-sidebar">
+      <div class="site-summary">
+        <div class="site-image">
+          <img [src]="site.archaiosUser?.photoUrl || 'https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/assets/images/archaios.png'" [alt]="site.name">
+        </div>
+        <div>
+          <span class="site-type">{{ site.archaiosUser?.role || 'Archaeological Site' }}</span>
+          <h3>{{ site.name }}</h3>
+        </div>
+      </div>
+      
+      <div class="navigation-steps">
+        <div class="nav-step" [class.active]="currentStep === 0" (click)="goToStep(0)">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <div class="step-details">
+            <div class="step-title">Overview & Components</div>
+            <div class="step-desc">Site info & features</div>
+          </div>
+        </div>
+        
+        <div class="nav-step" [class.active]="currentStep === 1" (click)="goToStep(1)">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>
+          <div class="step-details">
+            <div class="step-title">Location</div>
+            <div class="step-desc">Geographic context</div>
+          </div>
+        </div>
+        
+        <div class="nav-step" [class.active]="currentStep === 2" (click)="goToStep(2)">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+          </div>
+          <div class="step-details">
+            <div class="step-title">Analysis</div>
+            <div class="step-desc">Archaeological insights</div>
+          </div>
+        </div>
+        
+        <!-- New step for agent analysis timeline -->
+        <div class="nav-step" [class.active]="currentStep === 3" (click)="goToStep(3)">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="step-details">
+            <div class="step-title">Expert Discussion</div>
+            <div class="step-desc">Analysis timeline</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="site-basic-info">
+        <div class="info-item" *ngIf="site.lastUpdated">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="info-text">Updated: {{ site.lastUpdated | date:'MMM d, yyyy, hh:mm' }}</div>
+        </div>
+        
+        <div class="info-item" *ngIf="site.archaiosUser">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="info-text">By: {{ site.archaiosUser?.username }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="wizard-content">
+      <!-- Combined Overview and Components Step -->
+      <div class="step-content overview-step" *ngIf="currentStep === 0">
+        <div class="step-header">
+          <h3>Site Overview & Components</h3>
+          <p>Basic information and archaeological features found at this site</p>
+        </div>
+        
+        <div class="step-body">
+          <div class="approval-status-badge" [ngClass]="{
+            'approved': isApproved(), 
+            'rejected': isRejected(),
+            'not-approved': !isApproved() && !isRejected()
+          }">
+            <div class="status-icon">
+              <svg *ngIf="isApproved()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <svg *ngIf="isRejected()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+              <svg *ngIf="!isApproved() && !isRejected()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <div class="status-text">
+              <div class="status-label">
+                {{ isApproved() ? 'Approved Site' : (isRejected() ? 'Not Approved' : 'Under Review') }}
+              </div>
+              <div class="status-description">{{ getApprovalDescription() }}</div>
+            </div>
+          </div>
+          <div class="site-description">
+            <p [innerHTML]="getFormattedDescription()"></p>
+          </div>
+          <!-- Components Carousel Section -->
+          <div class="components-section">
+            <h4 class="section-title">
+              Archaeological Components
+              <button class="overlay-toggle-btn" 
+                      *ngIf="canUseOverlay()" 
+                      [class.active]="overlayMode"
+                      (click)="toggleOverlayMode()"
+                      title="Toggle image overlay mode">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                  <polyline points="14 5 9 10" opacity="0.6"></polyline>
+                </svg>
+                <span>{{ overlayMode ? 'Exit Overlay' : 'Overlay Images' }}</span>
+              </button>
+            </h4>
+            
+            <!-- Normal carousel view when not in overlay mode -->
+            <div class="carousel-container" *ngIf="hasValidComponentImages() && !overlayMode">
+              <div class="carousel-wrapper">
+                <div class="carousel-slide" [style.transform]="'translateX(' + (-currentComponentIndex * 100) + '%)'">
+                  <div class="component-card" *ngFor="let component of getComponentsWithImages()">
+                    <div class="component-image">
+                      <img [src]="component.imageUrl || 'assets/images/default-component.jpg'" 
+                           [alt]="component.name"
+                           (click)="openImageViewer(component.imageUrl)"
+                           class="clickable-image">
+                      <div class="component-type">{{ component.type || 'Feature' }}</div>
+                      <div class="image-zoom-hint like-button" 
+                              [class.liked]="hasUserLikedComponent(component)" 
+                              (click)="toggleComponentLike(component, $event)">
+                        
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path [attr.d]="hasUserLikedComponent(component) ? 
+                            'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z' : 
+                            'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z'"></path>
+                        </svg>
+                        <span class="likes-count">{{ component.likes || 0 }}</span>
+                      </div>
+                    </div>
+                    <div class="component-details">
+                      <h4>{{ component.name }}</h4>
+                      <p>{{ component.state || 'No additional details available.' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Carousel Controls -->
+              <div class="carousel-controls" *ngIf="getComponentsWithImages().length > 1">
+                <button class="carousel-prev" [disabled]="currentComponentIndex === 0" (click)="prevComponent()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"></path>
+                  </svg>
+                </button>
+                <div class="carousel-indicators">
+                  <span *ngFor="let component of getComponentsWithImages(); let i = index" 
+                        class="indicator" 
+                        [class.active]="i === currentComponentIndex"
+                        (click)="goToComponent(i)">
+                  </span>
+                </div>
+                <button class="carousel-next" [disabled]="currentComponentIndex >= getComponentsWithImages().length - 1" (click)="nextComponent()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Overlay view when in overlay mode -->
+            <div class="overlay-container" *ngIf="hasValidComponentImages() && overlayMode">
+              <div class="overlay-viewer">
+                <div class="image-stack">
+                  <!-- Base image -->
+                  <img class="base-image" 
+                       [src]="getComponentsWithImages()[baseImageIndex].imageUrl" 
+                       alt="Base image">
+                  
+                  <!-- Overlay image -->
+                  <img class="overlay-image" 
+                       [src]="getComponentsWithImages()[overlayImageIndex].imageUrl" 
+                       [style.opacity]="overlayOpacity / 100"
+                       [style.mix-blend-mode]="blendMode"
+                       alt="Overlay image">
+                </div>
+                
+                <!-- Overlay controls panel -->
+                <div class="overlay-controls" *ngIf="showOverlayControls">
+                  <div class="control-group">
+                    <label>Base Image</label>
+                    <select #baseSelect (change)="selectBaseImage(baseSelect.value)" [value]="baseImageIndex">
+                      <option *ngFor="let comp of getComponentsWithImages(); let i = index" 
+                              [value]="i" 
+                              [disabled]="i === overlayImageIndex">
+                        {{ comp.name || 'Component ' + (i + 1) }}
+                      </option>
+                    </select>
+                  </div>
+                  
+                  <div class="control-group">
+                    <label>Overlay Image</label>
+                    <select #overlaySelect (change)="selectOverlayImage(overlaySelect.value)" [value]="overlayImageIndex">
+                      <option *ngFor="let comp of getComponentsWithImages(); let i = index" 
+                              [value]="i" 
+                              [disabled]="i === baseImageIndex">
+                        {{ comp.name || 'Component ' + (i + 1) }}
+                      </option>
+                    </select>
+                  </div>
+                  
+                  <div class="control-group">
+                    <label>Opacity: {{ overlayOpacity }}%</label>
+                    <input #opacitySlider 
+                           type="range" 
+                           min="0" 
+                           max="100" 
+                           [value]="overlayOpacity" 
+                           (input)="updateOverlayOpacity(opacitySlider.value)"
+                           class="opacity-slider">
+                  </div>
+                  
+                  <div class="control-group">
+                    <label>Blend Mode</label>
+                    <div class="blend-mode-buttons">
+                      <button *ngFor="let mode of getAvailableBlendModes()" 
+                              [class.active]="blendMode === mode"
+                              (click)="setBlendMode(mode)"
+                              class="blend-mode-btn">
+                        {{ mode }}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="control-actions">
+                    <button class="reset-btn" (click)="resetOverlay()">Reset</button>
+                    <button class="fullscreen-btn" (click)="openImageViewer(getComponentsWithImages()[baseImageIndex].imageUrl)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                      </svg>
+                      Fullscreen
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Image thumbnails for quick selection -->
+              <div class="overlay-thumbnails">
+                <div class="thumbnail-grid">
+                  <div *ngFor="let comp of getComponentsWithImages(); let i = index" 
+                       class="thumbnail-item"
+                       [class.base-selected]="i === baseImageIndex"
+                       [class.overlay-selected]="i === overlayImageIndex">
+                    <img [src]="comp.imageUrl" 
+                         [alt]="comp.name"
+                         (click)="currentComponentIndex = i">
+                    <div class="thumbnail-label">{{ comp.name || 'Component ' + (i + 1) }}</div>
+                    <div class="thumbnail-badges">
+                      <span class="badge base" *ngIf="i === baseImageIndex">Base</span>
+                      <span class="badge overlay" *ngIf="i === overlayImageIndex">Overlay</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="no-components" *ngIf="!hasValidComponentImages()">
+              <p>No visual components have been documented for this site yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Location Step - now index 1 -->
+      <div class="step-content location-step" *ngIf="currentStep === 1">
+        <div class="step-header">
+          <h3>Geographic Context</h3>
+          <p>Location information and surrounding landscape</p>
+        </div>
+        
+        <div class="step-body">
+          <div class="map-container">
+            <div id="site-detail-map" style="width: 100%; height: 100%;"></div>
+            <div class="map-loading" *ngIf="currentStep === 1 && !mapInitialized">
+              <div class="spinner"></div>
+              <p>Loading map...</p>
+            </div>
+          </div>
+          
+          <div class="location-details">
+            <div class="location-item">
+              <div class="location-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="10" r="3"></circle>
+                  <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+                </svg>
+              </div>
+              <div class="location-info">
+                <h5>Coordinates</h5>
+                <p>{{ site.latitude || '0' }}, {{ site.longitude || '0' }}</p>
+              </div>
+            </div>
+            
+            <div class="location-item">
+              <div class="location-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"></path>
+                </svg>
+              </div>
+              <div class="location-info">
+                <h5>Region</h5>
+                <p>{{ site.location || 'Unknown' }}</p>
+              </div>
+            </div>
+            
+            <div class="location-item" *ngIf="site.elevation">
+              <div class="location-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 12h20M12 2v20"></path>
+                </svg>
+              </div>
+              <div class="location-info" >
+                <h5>Elevation</h5>
+                <p>{{ site.elevation || 'Unknown' }} m</p>
+              </div>
+            </div>
+            
+            <div class="location-item" *ngIf="site.terrain">
+              <div class="location-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                  <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+              </div>
+              <div class="location-info">
+                <h5>Terrain</h5>
+                <p>{{ site.terrain || 'Not specified' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analysis Step - now index 2 -->
+      <div class="step-content analysis-step" *ngIf="currentStep === 2">
+        <div class="step-header">
+          <h3>Archaeological Analysis</h3>
+          <p>Professional assessment and preservation status</p>
+        </div>
+        
+        <div class="step-body">
+          
+          <!-- Analysis Results Section -->
+          <div class="analysis-results" *ngIf="site.analysisResults && hasAnalysisResults()">
+            <h4>Site Analysis Results</h4>
+            
+            <div class="analysis-tabs">
+              <div class="tab" 
+                   *ngFor="let group of getAnalysisGroups()" 
+                   [class.active]="currentAnalysisTab === group" 
+                   (click)="selectAnalysisTab(group)">
+                {{ group }}
+              </div>
+            </div>
+            
+            <ng-container *ngIf="getCurrentAnalysisResult()">
+              <div class="analysis-content">
+                <div class="analysis-header">
+                  <div class="analysis-caption">{{ getCurrentAnalysisResult()?.caption }}</div>
+                  <div class="analysis-tags" *ngIf="getCurrentAnalysisResult()?.tags && getCurrentAnalysisResult()?.tags!.length > 0">
+                    <span class="tag" *ngFor="let tag of getCurrentAnalysisResult()?.tags || []">{{ tag }}</span>
+                  </div>
+                </div>
+                
+                <div class="detected-features" *ngIf="getCurrentAnalysisResult()?.features && getCurrentAnalysisResult()?.features!.length > 0">
+                  <h5>Detected Features</h5>
+                  <div class="features-list">
+                    <div class="feature-item" *ngFor="let feature of getCurrentAnalysisResult()?.features || []">
+                      <div class="feature-header">
+                        <div class="feature-name">{{ feature.name }}</div>
+                        <div class="feature-confidence">
+                          Confidence: {{ (feature.confidence * 100).toFixed(0) }}%
+                        </div>
+                      </div>
+                      <div class="feature-description">{{ feature.description }}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="analysis-images" *ngIf="getCurrentAnalysisResult()?.imageUrls && getCurrentAnalysisResult()?.imageUrls!.length > 0">
+                  <h5>Analysis Images</h5>
+                  <div class="images-carousel">
+                    <ng-container *ngIf="getCurrentAnalysisResult()?.imageUrls as imageUrls">
+                      <div class="image-item" *ngFor="let url of imageUrls; let i = index" 
+                           [class.active]="currentImageIndex === i">
+                        <img [src]="url" [alt]="'Analysis image ' + (i + 1)">
+                      </div>
+                      <div class="carousel-controls" *ngIf="imageUrls.length > 1">
+                        <button class="prev" (click)="prevImage()" [disabled]="currentImageIndex === 0">&lt;</button>
+                        <div class="carousel-indicators">
+                          <span *ngFor="let url of imageUrls; let i = index" 
+                                [class.active]="currentImageIndex === i"
+                                (click)="selectImage(i)"></span>
+                        </div>
+                        <button class="next" (click)="nextImage()" 
+                                [disabled]="currentImageIndex >= imageUrls.length - 1">&gt;</button>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+          
+          <div class="expert-notes" *ngIf="site.archaiosUser">
+            <div class="expert-header">
+              <div class="expert-avatar">
+                <img [src]="site.archaiosUser.photoUrl || 'https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/assets/images/archaios.png'" [alt]="site.archaiosUser.name">
+              </div>
+              <div class="expert-info">
+                <h5>{{ site.archaiosUser.username }}</h5>
+                <span>{{ site.archaiosUser.role || 'Archaeological Expert' }}</span>
+              </div>
+            </div>
+            
+            <div class="expert-content">
+              <p *ngIf="site.expertNotes">{{ site.expertNotes }}</p>
+              <p *ngIf="!site.expertNotes">This site was recorded by {{ site.archaiosUser.username }}. No additional expert notes are available at this time.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- New Analysis Timeline Step -->
+      <div class="step-content timeline-step" *ngIf="currentStep === 3">
+        <div class="step-header">
+          <h3>Archaeological Expert Discussion</h3>
+          <p>Specialist analysis timeline showing how our archaeological team evaluated this site</p>
+        </div>
+        
+        <div class="step-body">
+          <!-- Agent Analysis Timeline -->
+          <div class="agent-timeline" *ngIf="hasAgentAnalysis()">
+            <div class="timeline-container">
+              <div class="timeline-track"></div>
+              
+              <div *ngFor="let message of site.agentAnalysis; let isFirst = first; let isLast = last; let i = index" 
+                  class="timeline-entry" 
+                  [ngClass]="{'first': isFirst, 'last': isLast, 'coordinator': message.agentName === 'TeamCoordinator'}">
+                
+                <div class="timeline-agent-icon" [ngClass]="getAgentIconClass(message)">
+                  <div class="agent-marker">
+                    <ng-container [ngSwitch]="message.agentType">
+                      <!-- Archaeological Analyst Icon -->
+                      <svg *ngSwitchCase="'ArchaeologicalAnalyst'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                      </svg>
+                      
+                      <!-- Terrain Specialist Icon -->
+                      <svg *ngSwitchCase="'TerrainSpecialist'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                      </svg>
+                      
+                      <!-- Environmental Expert Icon -->
+                      <svg *ngSwitchCase="'EnvironmentalExpert'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8c0 5-10 13-10 13S-2 13 8 8s10 8 10 8"></path>
+                        <path d="M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+                      </svg>
+                      
+                      <!-- Team Coordinator Icon -->
+                      <svg *ngSwitchDefault viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                    </ng-container>
+                  </div>
+                </div>
+                
+                <div class="timeline-content">
+                  <div class="message-header">
+                    <span class="agent-name">{{ message.agentName }}</span>
+                    <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+                  </div>
+                  
+                  <div class="message-body">
+                    <p [innerHTML]="formatMessage(message.message)"></p>
+                  </div>
+                  
+                  <div class="message-footer" *ngIf="message.metadata && message.metadata.references">
+                    <div class="references">
+                      <span class="ref-title">Referenced:</span>
+                      <span class="ref-content">{{ message.metadata.references }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="timeline-conclusion" *ngIf="getConsensusDecision() !== ''">
+                <div class="conclusion-marker" [ngClass]="{'approved': isApproved(), 'rejected': !isApproved()}">
+                  <svg *ngIf="isApproved()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <svg *ngIf="!isApproved()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="conclusion-content">
+                  <h4>Final Consensus: {{ isApproved() ? 'Approved' : 'Not Approved' }}</h4>
+                  <p>{{ getConsensusDecision() }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Timeline Legend -->
+            <div class="timeline-legend">
+              <div class="legend-item">
+                <div class="legend-icon analyst"></div>
+                <span>Archaeological Analyst</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-icon terrain"></div>
+                <span>Terrain Specialist</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-icon environmental"></div>
+                <span>Environmental Expert</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-icon coordinator"></div>
+                <span>Team Coordinator</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- No Analysis Available Message -->
+          <div class="no-analysis" *ngIf="!hasAgentAnalysis()">
+            <div class="no-data-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <p>No archaeological team analysis is available for this site yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="popup-footer">
+    <div class="step-count">
+      Step {{ currentStep + 1 }} of 4
+    </div>
+    
+    <div class="navigation-buttons">
+      <button class="prev-btn" *ngIf="currentStep > 0" (click)="prevStep()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+        Previous
+      </button>
+      
+      <button class="next-btn" *ngIf="currentStep < 3" (click)="nextStep()">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"></path>
+        </svg>
+      </button>
+      
+      <button class="next-btn" *ngIf="currentStep === 3" (click)="closeWithAnimation($event)">
+        Close
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Full-screen image viewer modal -->
+  <div class="image-viewer-overlay" *ngIf="showImageViewer" (click)="closeImageViewer()">
+    <div class="image-viewer-content" (click)="$event.stopPropagation()">
+      <button class="close-viewer" (click)="closeImageViewer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="image-container">
+        <img [src]="currentViewerImage" alt="Full size image">
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,238 @@
+<div class="leaderboard-page">
+  <div class="leaderboard-header">
+    <h1>Archaeological Discoveries Leaderboard</h1>
+    <div class="stats-overview">
+      <div class="stat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 2v4m0 12v4m-8-12h4m12 0h-4"/>
+        </svg>
+        <div class="stat-value">{{ stats.totalDiscoveries }}</div>
+        <div class="stat-label">Total Discoveries</div>
+      </div>
+      
+      <div class="stat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <div class="stat-value">{{ stats.totalSitesAnalyzed }}</div>
+        <div class="stat-label">Sites Analyzed</div>
+      </div>
+      
+      <div class="stat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <div class="stat-value">{{ stats.averageAccuracy }}%</div>
+        <div class="stat-label">Avg. Accuracy Rate</div>
+      </div>
+    </div>
+    
+    <div class="search-filter">
+      <div class="search-control">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input 
+          type="text" 
+          [formControl]="searchControl" 
+          placeholder="Search archaeologists or institutions..."
+          class="search-input"
+        />
+      </div>
+    </div>
+    
+    <div class="time-filters">
+      <button [class.active]="timeFilter === 'all-time'" (click)="filterByTime('all-time')">All Time</button>
+      <button [class.active]="timeFilter === 'yearly'" (click)="filterByTime('yearly')">This Year</button>
+      <button [class.active]="timeFilter === 'monthly'" (click)="filterByTime('monthly')">This Month</button>
+      <button [class.active]="timeFilter === 'weekly'" (click)="filterByTime('weekly')">This Week</button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="artifact-spinner">
+      <div class="spinner-artifact"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <p>Excavating leaderboard data...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="error && !loading">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12" y2="16"/>
+    </svg>
+    <p>{{ error }}</p>
+    <button (click)="retryLoading()" class="retry-btn">Try Again</button>
+  </div>
+
+  <!-- Podium section for top 3 users -->
+  <div class="podium-section" *ngIf="!loading && !error && archaeologists.length > 0">
+    <div class="podium">
+      <div class="podium-item second" *ngIf="archaeologists[1] as second">
+        <div class="avatar-wrapper">
+          <img [src]="second.avatar" [alt]="second.name">
+          <div class="rank">2</div>
+        </div>
+        <div class="details">
+          <div class="name">{{ second.name }}</div>
+          <div class="score">{{ second.score }}</div>
+          <div class="stats">{{ second.discoveries.length }} discoveries</div>
+        </div>
+      </div>
+
+      <div class="podium-item first" *ngIf="archaeologists[0] as first">
+        <div class="avatar-wrapper">
+          <img [src]="first.avatar" [alt]="first.name">
+          <div class="rank">1</div>
+        </div>
+        <div class="details">
+          <div class="name">{{ first.name }}</div>
+          <div class="score">{{ first.score }}</div>
+          <div class="stats">{{ first.discoveries.length }} discoveries</div>
+        </div>
+      </div>
+
+      <div class="podium-item third" *ngIf="archaeologists[2] as third">
+        <div class="avatar-wrapper">
+          <img [src]="third.avatar" [alt]="third.name">
+          <div class="rank">3</div>
+        </div>
+        <div class="details">
+          <div class="name">{{ third.name }}</div>
+          <div class="score">{{ third.score }}</div>
+          <div class="stats">{{ third.discoveries.length }} discoveries</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="leaderboard-content" *ngIf="!loading && !error">
+    <!-- Empty state when no results -->
+    <div class="empty-state" *ngIf="archaeologists.length === 0">
+      <div class="empty-illustration">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h3>No Results Found</h3>
+      <p>We couldn't find any archaeologists matching your criteria.</p>
+      <button class="reset-btn" (click)="searchControl.setValue(''); filterByTime('all-time')">Reset Filters</button>
+    </div>
+    
+    <!-- Leaderboard table -->
+    <div class="list-container" *ngIf="archaeologists.length > 0">
+      <div class="list-header">
+        <div class="col-rank">Rank</div>
+        <div class="col-user">Archaeologist</div>
+        <div class="col-discovery">Recent Discovery</div>
+        <div class="col-stats">Stats</div>
+        <div class="col-badge">Recognition</div>
+      </div>
+      
+      <div class="list-body">
+        <div class="list-item" *ngFor="let archaeologist of archaeologists">
+          <div class="col-rank">
+            <div class="rank-badge" [class.top3]="archaeologist.rank <= 3">
+              {{ archaeologist.rank }}
+            </div>
+          </div>
+          
+          <div class="col-user">
+            <div class="user-info">
+              <img [src]="archaeologist.avatar" [alt]="archaeologist.name">
+              <div class="user-details">
+                <div class="name">{{ archaeologist.name }}</div>
+                <div class="institution">{{ archaeologist.institution }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-discovery">
+            <div class="discovery-info">
+              <div class="recent">{{ archaeologist.recentDiscovery }}</div>
+              <div class="total">{{ archaeologist.discoveries.length }} findings</div>
+            </div>
+          </div>
+          
+          <div class="col-stats">
+            <div class="stats-info">
+              <div class="score">{{ archaeologist.score }} pts</div>
+              <div class="accuracy-wrapper">
+                <div class="accuracy-bar">
+                  <div class="fill" [style.width]="archaeologist.accuracy + '%'"></div>
+                </div>
+                <span class="accuracy-text">{{ archaeologist.accuracy }}%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-badge">
+            <div class="badge-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 15l-2 5l9-9l-9-9l2 5l-8 4l8 4z"/>
+              </svg>
+              <span>{{ archaeologist.badge }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Pagination controls -->
+      <div class="pagination-controls" *ngIf="totalUsers > pageSize">
+        <button 
+          class="page-btn prev" 
+          [disabled]="currentPage === 1"
+          (click)="loadPage(currentPage - 1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        
+        <button 
+          class="page-btn first" 
+          *ngIf="currentPage > 3"
+          [class.active]="currentPage === 1"
+          (click)="loadPage(1)">
+          1
+        </button>
+        
+        <span class="page-ellipsis" *ngIf="currentPage > 3">...</span>
+        
+        <button 
+          *ngFor="let page of getPageNumbers()"
+          class="page-btn"
+          [class.active]="currentPage === page"
+          (click)="loadPage(page)">
+          {{ page }}
+        </button>
+        
+        <span class="page-ellipsis" *ngIf="currentPage < getTotalPages() - 2">...</span>
+        
+        <button 
+          class="page-btn last" 
+          *ngIf="currentPage < getTotalPages() - 2"
+          [class.active]="currentPage === getTotalPages()"
+          (click)="loadPage(getTotalPages())">
+          {{ getTotalPages() }}
+        </button>
+        
+        <button 
+          class="page-btn next" 
+          [disabled]="currentPage === getTotalPages()"
+          (click)="loadPage(currentPage + 1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

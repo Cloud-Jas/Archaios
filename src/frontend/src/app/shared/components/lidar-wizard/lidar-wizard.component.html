@@ -1,0 +1,370 @@
+<div class="wizard-backdrop" (click)="close.emit()"></div>
+<div class="wizard-container">
+  <div class="wizard-header">
+    <div class="header-content">
+      <div class="wizard-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h2>Customize LIDAR Processing</h2>
+        <span>{{ selectedFile?.name }}</span>
+      </div>
+    </div>
+    <button class="close-btn" (click)="close.emit()">✕</button>
+  </div>
+
+  <div class="workspace-container">
+    <div class="nodes-sidebar" [class.collapsed]="isSidebarCollapsed">
+      <h3>Processing Components</h3>
+      <p class="sidebar-description">Click components to add them to your workflow</p>
+      
+      <div class="sidebar-content">
+        <div class="nodes-group">
+          <h4>Data Sources</h4>
+          <div class="nodes-list">
+            <div class="drag-node" 
+                 *ngFor="let node of availableNodes | filterNodes:'source'"
+                 (click)="addNodeToWorkflow(node.id)">
+              <div class="node-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path [attr.d]="getIconPath(node.icon)"></path>
+                </svg>
+              </div>
+              <div class="node-details">
+                <div class="node-title">{{ node.label }}</div>
+                <div class="node-description">{{ node.description }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="nodes-group">
+          <h4>Processing</h4>
+          <div class="nodes-list">
+            <div class="drag-node" 
+                 *ngFor="let node of availableNodes | filterNodes:'processor'"
+                 (click)="addNodeToWorkflow(node.id)">
+              <div class="node-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path [attr.d]="getIconPath(node.icon)"></path>
+                </svg>
+              </div>
+              <div class="node-details">
+                <div class="node-title">{{ node.label }}</div>
+                <div class="node-description">{{ node.description }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="nodes-group">
+          <h4>Output</h4>
+          <div class="nodes-list">
+            <div class="drag-node" 
+                 *ngFor="let node of availableNodes | filterNodes:'sink'"
+                 (click)="addNodeToWorkflow(node.id)">
+              <div class="node-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path [attr.d]="getIconPath(node.icon)"></path>
+                </svg>
+              </div>
+              <div class="node-details">
+                <div class="node-title">{{ node.label }}</div>
+                <div class="node-description">{{ node.description }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add preset workflows section with correct styling -->
+      <div class="preset-workflows">
+        <h4>Preset Workflows</h4>
+        
+        <div class="nodes-list">
+          <!-- E57 files: only show Direct Image Processing option -->
+          <ng-container *ngIf="selectedFile && getFileExtension(selectedFile.name).toLowerCase() === 'e57'">
+            <div class="drag-node preset-item" (click)="loadPresetWorkflow('direct-image-processing')">
+              <div class="node-icon preset-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 19V5a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"></path>
+                </svg>
+              </div>
+              <div class="node-details preset-details">
+                <div class="node-title preset-title">Direct Image Processing</div>
+                <div class="node-description preset-description">Quick visualization of E57 data without full processing</div>
+              </div>
+            </div>
+          </ng-container>
+          
+          <!-- Non-E57 files: show all other preset workflows -->
+          <ng-container *ngIf="!selectedFile || getFileExtension(selectedFile.name).toLowerCase() !== 'e57'">
+            <div class="drag-node preset-item" (click)="loadPresetWorkflow('archaeological-survey')">
+              <div class="node-icon preset-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                </svg>
+              </div>
+              <div class="node-details preset-details">
+                <div class="node-title preset-title">Archaeological Survey</div>
+                <div class="node-description preset-description">Optimized for initial site evaluation and feature detection</div>
+              </div>
+            </div>
+            
+            <div class="drag-node preset-item" (click)="loadPresetWorkflow('detailed-analysis')">
+              <div class="node-icon preset-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <line x1="10" y1="9" x2="8" y2="9"></line>
+                </svg>
+              </div>
+              <div class="node-details preset-details">
+                <div class="node-title preset-title">Detailed Analysis</div>
+                <div class="node-description preset-description">Comprehensive processing for detailed site investigation</div>
+              </div>
+            </div>
+            
+            <div class="drag-node preset-item" (click)="loadPresetWorkflow('settlement-detection')">
+              <div class="node-icon preset-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <div class="node-details preset-details">
+                <div class="node-title preset-title">Settlement Detection</div>
+                <div class="node-description preset-description">Specialized for ancient settlement patterns and structures</div>
+              </div>
+            </div>
+            
+            <!-- Add new Satellite Analysis preset -->
+            <div class="drag-node preset-item" (click)="loadPresetWorkflow('archaeological-satellite')">
+              <div class="node-icon preset-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </div>
+              <div class="node-details preset-details">
+                <div class="node-title preset-title">Satellite Analysis</div>
+                <div class="node-description preset-description">Combine LiDAR and satellite imagery analysis</div>
+              </div>
+            </div>
+            
+            <!-- Add new Optimized Visualization preset -->
+            <div class="drag-node preset-item" (click)="loadPresetWorkflow('optimized-visualization')">
+              <div class="node-icon preset-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+              <div class="node-details preset-details">
+                <div class="node-title preset-title">Optimized Visualization</div>
+                <div class="node-description preset-description">Enhanced settings for visual analysis and interpretation</div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    
+    <div class="workflow-canvas">
+      <div class="canvas-background">
+        <div class="canvas-grid"></div>
+        <div class="instructions" *ngIf="workflowNodes.length === 0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#bfa76a" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <p>Click processing components from the sidebar to build your workflow</p>
+        </div>
+      </div>
+      <!-- Edges SVG Layer -->
+      <div class="workflow-edges">
+        <svg style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto;">
+          <ng-container *ngFor="let edge of getEdges()">
+            <g style="pointer-events:visiblePainted;">
+              <path class="edge-path"
+                    [attr.d]="getEdgePath(edge.from, edge.to)"
+                    (click)="onEdgeClick(edge, $event)"
+                    (contextmenu)="onEdgeClick(edge, $event)"
+                    tabindex="0"
+                    style="cursor:pointer; pointer-events:visiblePainted;" />
+            </g>
+          </ng-container>
+          <!-- Temporary edge while connecting -->
+          <path
+            *ngIf="connectingFromNodeId && (hoveredNodeId || tempMousePos)"
+            class="edge-path connecting"
+            [attr.d]="getTempEdgePath()"
+          />
+        </svg>
+      </div>
+      <!-- Nodes Layer -->
+      <div class="workflow-nodes">
+        <div
+          class="workflow-node"
+          *ngFor="let node of workflowNodes"
+          [class.selected]="selectedNode?.id === node.id"
+          [class.dragging]="draggingNodeId === node.id"
+          [ngStyle]="{
+            left: getNodePosition(node.id).x + 'px',
+            top: getNodePosition(node.id).y + 'px'
+          }"
+          (mousedown)="onNodeMouseDown($event, node.id)"
+          (click)="selectNode(node)"
+          tabindex="0"
+        >
+          <div class="node-header">
+            <div class="node-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path [attr.d]="getIconPath(node.icon)"></path>
+              </svg>
+            </div>
+            <div class="node-title">
+              {{ node.label }}
+            </div>
+            <button class="delete-node-btn" title="Delete Node" (click)="deleteNode(node.id); $event.stopPropagation();">✕</button>
+          </div>
+          <div class="node-body">
+            <div class="node-params">
+              <div class="param-item" *ngFor="let param of getNodeParams(node)">
+                <label>{{ param.label }}</label>
+                <input type="range" *ngIf="param.type === 'range'" 
+                       [min]="param.min" [max]="param.max" [step]="param.step"
+                       [ngModel]="node.inputs[param.key]" 
+                       (input)="updateNodeParam(node.id, param.key, $event)"
+                       class="range-slider">
+                <input type="checkbox" *ngIf="param.type === 'checkbox'"
+                       [checked]="node.inputs[param.key]"
+                       (change)="updateNodeParam(node.id, param.key, $event)">
+                <span class="param-value" *ngIf="param.type === 'range'">{{ node.inputs[param.key] }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="node-connectors">
+            <div
+              class="connector"
+              (mousedown)="startConnecting(node.id); $event.stopPropagation();"
+              (mouseenter)="onConnectorEnter(node.id)"
+              (mouseleave)="onConnectorLeave()"
+              (mouseup)="connectingFromNodeId && connectingFromNodeId !== node.id ? completeConnecting(node.id) : null; $event.stopPropagation();"
+              title="Connect edge"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="properties-panel" *ngIf="selectedNode">
+      <h3>{{ selectedNode.label }}</h3>
+      <p class="panel-description">{{ selectedNode.description }}</p>
+      <div class="properties-form">
+        <div class="property-group" *ngFor="let param of getNodeParams(selectedNode)">
+          <label>{{ param.label }}</label>
+          <input *ngIf="param.type === 'text'" type="text" [value]="selectedNode.inputs[param.key]"
+                 (input)="updateNodeParam(selectedNode.id, param.key, $event)">
+          <input *ngIf="param.type === 'number'" type="number" [value]="selectedNode.inputs[param.key]"
+                 [min]="param.min" [max]="param.max" [step]="param.step"
+                 (input)="updateNodeParam(selectedNode.id, param.key, $event)">
+          <input *ngIf="param.type === 'range'" type="range" [ngModel]="selectedNode.inputs[param.key]"
+                 [min]="param.min" [max]="param.max" [step]="param.step" class="range-slider"
+                 (input)="updateNodeParam(selectedNode.id, param.key, $event)">
+          <span class="param-value" *ngIf="param.type === 'range'">{{ selectedNode.inputs[param.key] }}</span>
+          <select *ngIf="param.type === 'select'" [value]="selectedNode.inputs[param.key]"
+                  (change)="updateNodeParam(selectedNode.id, param.key, $event)">
+            <option *ngFor="let option of param.options" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <div class="checkbox-wrapper" *ngIf="param.type === 'checkbox'">
+            <input type="checkbox" [id]="param.key" [checked]="selectedNode.inputs[param.key]"
+                   (change)="updateNodeParam(selectedNode.id, param.key, $event)">
+            <label [for]="param.key">{{ param.description }}</label>
+          </div>
+          <!-- Historical Context: file input and drag & drop -->
+          <ng-container *ngIf="param.type === 'file' && selectedNode.id.startsWith('historical_context')">
+            <div class="archaeo-hc-upload" [class.required-missing]="isHistoricalContextMissingFiles(selectedNode)">
+              <label class="archaeo-hc-label">
+                <span class="archaeo-hc-title">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#bfa76a" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+                    <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/>
+                  </svg>
+                  Attach Historical Documents <span class="required-indicator">*</span>
+                </span>
+                <span class="archaeo-hc-desc">Upload or drag &amp; drop TXT or PDF files with historical context</span>
+                <input
+                  type="file"
+                  multiple
+                  accept=".txt,.pdf,.doc,.docx"
+                  (change)="onHistoricalFilesSelected($event, selectedNode.id)"
+                  class="archaeo-hc-input"
+                  id="historical-upload-input"
+                />
+                <label for="historical-upload-input" class="archaeo-hc-browse-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                    <polyline points="7 9 12 4 17 9"/>
+                    <line x1="12" y1="4" x2="12" y2="16"/>
+                  </svg>
+                  Browse files
+                </label>
+              </label>
+              <div
+                class="archaeo-hc-dropzone"
+                (drop)="onHistoricalFilesDrop($event, selectedNode.id)"
+                (dragover)="onHistoricalDragOver($event)"
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#bfa76a" stroke-width="2" style="vertical-align:middle;margin-right:6px;">
+                  <path d="M12 19V6M5 12l7-7 7 7"/>
+                  <rect x="3" y="19" width="18" height="2" rx="1"/>
+                </svg>
+                <span>Drag &amp; drop files here</span>
+              </div>
+              <div *ngIf="selectedNode.inputs.files?.length" class="archaeo-hc-files">
+                <b>Selected files:</b>
+                <ul>
+                  <li *ngFor="let file of selectedNode.inputs.files">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8b6b35" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+                      <rect x="4" y="4" width="16" height="16" rx="2"/>
+                      <path d="M8 8h8M8 12h8M8 16h4"/>
+                    </svg>
+                    {{ file.name }}
+                  </li>
+                </ul>
+              </div>
+              <div *ngIf="isHistoricalContextMissingFiles(selectedNode)" class="archaeo-hc-error">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#e74c3c" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>Historical documents are required for this node</span>
+              </div>
+              <div class="archaeo-hc-hint">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#bfa76a" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 16v-4M12 8h.01"/>
+                </svg>
+                <span class="archaeo-hc-hint-text">Supported: .txt, .pdf, .doc, .docx | Max 10MB each</span>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard-footer">
+    <button class="reset-btn" (click)="resetWorkflow()">Reset</button>
+    <div class="footer-actions">
+      <button class="cancel-btn" (click)="close.emit()">Cancel</button>
+      <button class="process-btn" (click)="saveWorkflow()" >Process</button>
+    </div>
+  </div>
+</div>

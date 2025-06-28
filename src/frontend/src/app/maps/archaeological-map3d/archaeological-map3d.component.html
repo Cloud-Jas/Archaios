@@ -1,0 +1,76 @@
+<div class="earth-wrapper">
+  <!-- Add archaeological-themed spinner -->
+  <div *ngIf="isLoading" class="archaeology-spinner">
+    <div class="spinner-artifact"></div>
+    <div class="spinner-ring"></div>
+    <div class="spinner-message">
+      <span>Excavating Globe Data...</span>
+    </div>
+  </div>
+
+  <div class="top-navigation">
+    <div class="navigation-container">
+      <div class="breadcrumb-group">
+        <button class="nav-link" (click)="toggleSideMenu()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          Archaeological Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="myearth"></div>
+
+  <!-- Side menu for archaeological sites -->
+  <div *ngIf="showSideMenu" class="side-menu-backdrop" (click)="toggleSideMenu()"></div>
+  <div class="side-menu" [class.hidden]="!showSideMenu">
+    <div class="side-menu-header">
+      <h3>Archaeological Sites</h3>
+      <button class="close-btn" (click)="toggleSideMenu()">✕</button>
+    </div>
+
+    <div class="site-filters">
+      <!-- Site type filter -->
+      <div class="filter-group">
+        <h4>Site Type</h4>
+        <div class="filter-options">
+          <label>
+            <input type="radio" name="siteType" (change)="filterSites('heritage')" [checked]="selectedFilter === 'heritage'"> Heritage Sites
+          </label>
+          <label>
+            <input type="radio" name="siteType" (change)="filterSites('archaios')" [checked]="selectedFilter === 'archaios'"> Archaios Sites
+          </label>
+          <label>
+            <input type="radio" name="siteType" (change)="filterSites('potential')" [checked]="selectedFilter === 'potential'"> Potential Sites
+          </label>
+          <label>
+            <input type="radio" name="siteType" (change)="filterSites('myupload')" [checked]="selectedFilter === 'myupload'"> My Uploads
+          </label>
+          <label>
+            <input type="radio" name="siteType" (change)="filterSites('all')" [checked]="selectedFilter === 'all'"> View All
+          </label>          
+        </div>
+      </div>
+    </div>
+
+    <div class="site-list">
+      <h4>Available Sites</h4>
+      <div class="site-item" *ngFor="let site of filteredLocations" (click)="selectSite(site)">
+        <div class="site-icon" [class]="site.isKnownSite ? 'confirmed' : 'investigation'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div class="site-details">
+          <h5>{{ site.name }}</h5>
+          <div class="site-meta">
+            <span class="site-type">{{ site.type }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

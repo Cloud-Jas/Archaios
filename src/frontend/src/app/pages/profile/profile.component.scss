@@ -1,0 +1,456 @@
+.profile-page {
+  background: linear-gradient(to bottom, #f6f1e7, #fff);
+  height: calc(90vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #bfa76a transparent;
+  min-height: calc(100vh - 180px);
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #bfa76a;
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  .profile-header {
+    background: linear-gradient(135deg, #bfa76a, #8b6b35);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('/assets/images/pattern-bg.svg') center/cover;
+      opacity: 0.1;
+    }
+
+    .profile-info {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+
+      .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 16px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .profile-details {
+        color: #fff;
+
+        h1 {
+          font-family: 'Cinzel', serif;
+          font-size: 2.4rem;
+          margin-bottom: 0.5rem;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-email {
+          font-size: 1.1rem;
+          opacity: 0.9;
+          margin-bottom: 0.5rem;
+        }
+
+        .profile-role {
+          display: inline-block;
+          padding: 0.4rem 1rem;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 20px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .profile-content {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(191, 167, 106, 0.15);
+    border: 1px solid rgba(191, 167, 106, 0.2);
+    margin: 2rem auto;
+    margin-bottom: 10rem;
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+
+      .stat-card {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(191, 167, 106, 0.2);
+        box-shadow: 0 4px 12px rgba(191, 167, 106, 0.08);
+        transition: transform 0.2s;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(191, 167, 106, 0.12);
+        }
+
+        .stat-icon {
+          width: 42px;
+          height: 42px;
+          margin-bottom: 1rem;
+          color: #bfa76a;
+
+          svg {
+            width: 100%;
+            height: 100%;
+          }
+        }
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #3e2c18;
+          margin-bottom: 0.3rem;
+          font-family: 'Cinzel', serif;
+        }
+
+        .stat-label {
+          color: #8b6b35;
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .recent-activities {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(191, 167, 106, 0.15);
+      border: 1px solid rgba(191, 167, 106, 0.2);
+      margin-bottom: 2rem;
+
+      h2 {
+        color: #3e2c18;
+        font-family: 'Cinzel', serif;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .activity-timeline {
+        .activity-item {
+          padding: 1rem;
+          border-radius: 12px;
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background: rgba(191, 167, 106, 0.05);
+          }
+
+          .activity-icon {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+
+            &.discovery {
+              background: rgba(75, 181, 67, 0.1);
+              color: #4bb543;
+            }
+
+            &.analysis {
+              background: rgba(191, 167, 106, 0.1);
+              color: #bfa76a;
+            }
+          }
+
+          .activity-content {
+            flex: 1;
+
+            h3 {
+              color: #3e2c18;
+              font-size: 1rem;
+              margin-bottom: 0.3rem;
+            }
+
+            p {
+              color: #8b6b35;
+              font-size: 0.9rem;
+              margin-bottom: 0.5rem;
+            }
+
+            .activity-date {
+              color: #bfa76a;
+              font-size: 0.8rem;
+              font-style: italic;
+            }
+          }
+        }
+      }
+
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 0;
+
+        .artifact-spinner {
+          position: relative;
+          width: 120px;
+          height: 120px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .spinner-artifact {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #d9c7a3 20%, #bfa76a 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(191, 167, 106, 0.4);
+            z-index: 10;
+            position: absolute;
+            left: calc(50% - 20px);
+            top: calc(50% - 20px);
+            animation: artifactPulse 2s infinite alternate;
+          }
+
+          .spinner-ring {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 6px dotted #bfa76a;
+            border-radius: 50%;
+            animation: spinRing 6s linear infinite;
+            opacity: 0.6;
+          }
+        }
+
+        p {
+          margin-top: 1.5rem;
+          color: #8b6b35;
+          font-family: 'Georgia', serif;
+          font-size: 1rem;
+          font-style: italic;
+        }
+      }
+
+      .error-state,
+      .empty-state {
+        text-align: center;
+        padding: 2rem;
+
+        svg {
+          width: 40px;
+          height: 40px;
+          stroke: #8b6b35;
+          margin-bottom: 1rem;
+        }
+
+        p {
+          color: #3e2c18;
+          margin-bottom: 1rem;
+        }
+
+        .retry-btn {
+          background: linear-gradient(to bottom, #d4bc8b, #bfa76a);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 0.6rem 1rem;
+          font-family: 'Georgia', serif;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: linear-gradient(to bottom, #d9c495, #c8b077);
+            box-shadow: 0 4px 12px rgba(139, 107, 53, 0.4);
+          }
+        }
+      }
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+
+      .action-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-family: 'Georgia', serif;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.edit {
+          background: linear-gradient(135deg, #bfa76a, #8b6b35);
+          color: #fff;
+          border: none;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(191, 167, 106, 0.2);
+          }
+        }
+
+        &.logout {
+          background: transparent;
+          border: 1px solid #bfa76a;
+          color: #8b6b35;
+
+          &:hover {
+            background: rgba(191, 167, 106, 0.1);
+          }
+        }
+      }
+    }
+
+    .signout-section {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(191, 167, 106, 0.15);
+      border: 1px solid rgba(191, 167, 106, 0.2);
+
+      .signout-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+
+        .signout-info {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+
+          svg {
+            width: 32px;
+            height: 32px;
+            stroke: #8b6b35;
+          }
+
+          .signout-text {
+            h3 {
+              color: #3e2c18;
+              font-family: 'Cinzel', serif;
+              font-size: 1.2rem;
+              margin-bottom: 0.3rem;
+            }
+
+            p {
+              color: #8b6b35;
+              font-size: 0.9rem;
+            }
+          }
+        }
+
+        .signout-btn {
+          padding: 0.8rem 1.5rem;
+          background: linear-gradient(135deg, #bfa76a, #8b6b35);
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-family: 'Georgia', serif;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(191, 167, 106, 0.2);
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-page {
+    .profile-header {
+      padding: 2rem 1rem;
+
+      .profile-info {
+        flex-direction: column;
+        text-align: center;
+
+        .profile-avatar {
+          width: 100px;
+          height: 100px;
+        }
+
+        .profile-details h1 {
+          font-size: 1.8rem;
+        }
+      }
+    }
+
+    .profile-content {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .activity-item {
+        padding: 0.8rem !important;
+      }
+
+      .signout-content {
+        flex-direction: column;
+        text-align: center;
+
+        .signout-info {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spinRing {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes artifactPulse {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+    box-shadow: 0 0 20px rgba(191, 167, 106, 0.3);
+  }
+  50% {
+    transform: translateY(-3px) rotate(5deg);
+    box-shadow: 0 5px 20px rgba(191, 167, 106, 0.6);
+  }
+}

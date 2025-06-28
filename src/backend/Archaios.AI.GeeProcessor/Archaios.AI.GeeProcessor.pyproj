@@ -1,0 +1,60 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>f8612eaa-7753-4e4e-bcf3-2ecc86be9086</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>main.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>Archaios.AI.GeeProcessor</Name>
+    <RootNamespace>Archaios.AI.GeeProcessor</RootNamespace>
+    <InterpreterId>MSBuild|gee-env|$(MSBuildProjectFullPath)</InterpreterId>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="main.py" />
+    <Compile Include="config.py" />
+    <Compile Include="__init__.py" />
+    <Compile Include="core\interfaces.py" />
+    <Compile Include="core\models.py" />
+    <Compile Include="core\__init__.py" />
+    <Compile Include="infrastructure\callback_service.py" />
+    <Compile Include="infrastructure\__init__.py" />
+    <Compile Include="processors\gee_processor.py" />
+    <Compile Include="processors\__init__.py" />
+    <Compile Include="services\gee_service.py" />
+    <Compile Include="services\__init__.py" />
+    <Compile Include="api\routes.py" />
+    <Compile Include="api\__init__.py" />
+    <Compile Include="utils\ee_utils.py" />
+    <Compile Include="utils\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dockerfile" />
+    <Content Include="requirements.txt" />
+    <Content Include=".env" />
+    <Content Include="gee-service-account.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="core\" />
+    <Folder Include="infrastructure\" />
+    <Folder Include="processors\" />
+    <Folder Include="services\" />
+    <Folder Include="api\" />
+    <Folder Include="utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="gee-env\">
+      <Id>gee-env</Id>
+      <Version>3.13</Version>
+      <Description>gee-env (Python 3.13 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>

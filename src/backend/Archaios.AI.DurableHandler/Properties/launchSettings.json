@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Archaios.AI.DurableHandler": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7198"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "DockerfileRunArguments": "--init",
+      "httpPort": 30339,
+      "useSSL": false
+    }
+  }
+}

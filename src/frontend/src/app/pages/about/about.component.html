@@ -1,0 +1,511 @@
+<div class="about-page">
+  <!-- Hero Section with README title -->
+  <section class="hero-section">
+    <div class="hero-background"></div>
+    <div class="hero-content">
+      <div class="hero-badge">AI-Powered Archaeological Discovery</div>
+      <h1 class="hero-title">Archaios</h1>
+      <p class="hero-subtitle">
+        Revolutionizing archaeological discovery through cloud-native LiDAR processing, 
+        AI multi-agent analysis, and collaborative research tools
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value">100%</span>
+          <span class="stat-label">Cloud-Native</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">3</span>
+          <span class="stat-label">AI Expert Agents</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">∞</span>
+          <span class="stat-label">Scalability</span>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Project Highlights Section -->
+  <section class="highlights-section">
+    <div class="highlights-content">
+      <h2 class="highlights-title">Project Highlights</h2>
+      <div class="highlights-grid">
+        <div class="highlight-card" *ngFor="let highlight of projectHighlights; let i = index" 
+             [style.animation-delay]="i * 0.1 + 's'">
+          <div class="highlight-icon" [style.background]="highlight.color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path *ngIf="highlight.icon === 'award'" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              <path *ngIf="highlight.icon === 'workflow'" d="M3 3h18v18H3zM3 9h18M9 21V9"/>
+              <path *ngIf="highlight.icon === 'processing'" d="M12 2v20M2 12h20"/>
+              <path *ngIf="highlight.icon === 'collaboration'" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M21 8v13M17 8v13M9 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+              <path *ngIf="highlight.icon === 'innovation'" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <h3>{{ highlight.title }}</h3>
+          <p>{{ highlight.description }}</p>
+        </div>
+      </div>
+      
+      <div class="achievements-strip">
+        <div class="achievement" *ngFor="let achievement of keyAchievements">
+          <div class="achievement-icon">{{ achievement.icon }}</div>
+          <div class="achievement-text">{{ achievement.text }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="content-navigation">
+    <button class="nav-tab" [class.active]="activeTab === 'problem'" (click)="setActiveTab('problem')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
+      <span>The Challenge</span>
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'solution'" (click)="setActiveTab('solution')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <span>Why Archaios</span>
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'architecture'" (click)="setActiveTab('architecture')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <path d="M3 9h18M9 21V9"/>
+      </svg>
+      <span>Architecture</span>
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'technology'" (click)="setActiveTab('technology')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 18 22 12 16 6"/>
+        <polyline points="8 6 2 12 8 18"/>
+      </svg>
+      <span>Technology</span>
+    </button>
+  </nav>
+
+  <!-- Problem Statement Section -->
+  <section class="content-section" *ngIf="activeTab === 'problem'">
+    <div class="problem-content">
+      <div class="section-intro">
+        <h2>The Archaeological Challenge</h2>
+        <p class="lead-text">
+          During research into how archaeologists handle LiDAR datasets today, one thing became very clear: 
+          the current process is complex, tedious, and heavily dependent on expert manual interpretation.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+        <div class="problem-card" *ngFor="let problem of problemSections">
+          <div class="problem-icon" [class]="problem.icon">
+            <svg *ngIf="problem.icon === 'complexity'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4m10-18h-4a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4"/>
+              <path d="M10 7h4m-4 4h4m-4 4h4"/>
+            </svg>
+            <svg *ngIf="problem.icon === 'data'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+            <svg *ngIf="problem.icon === 'scale'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              <path d="M1 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+            </svg>
+          </div>
+          <h3>{{ problem.title }}</h3>
+          <p>{{ problem.description }}</p>
+        </div>
+      </div>
+
+      <div class="workflow-comparison">
+        <div class="workflow-card traditional">
+          <h4>Traditional Workflow</h4>
+          <div class="workflow-steps">
+            <div class="workflow-step">
+              <span class="step-number">1</span>
+              <span>Manual data collection</span>
+            </div>
+            <div class="workflow-step">
+              <span class="step-number">2</span>
+              <span>Local processing (days)</span>
+            </div>
+            <div class="workflow-step">
+              <span class="step-number">3</span>
+              <span>Expert interpretation</span>
+            </div>
+            <div class="workflow-step">
+              <span class="step-number">4</span>
+              <span>Limited collaboration</span>
+            </div>
+          </div>
+          <div class="workflow-issues">
+            <span class="issue">⚠️ Time-consuming</span>
+            <span class="issue">⚠️ Resource-intensive</span>
+            <span class="issue">⚠️ Not scalable</span>
+          </div>
+        </div>
+
+        <div class="workflow-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+
+        <div class="workflow-card archaios">
+          <h4>Archaios Workflow</h4>
+          <div class="workflow-steps">
+            <div class="workflow-step">
+              <span class="step-number">1</span>
+              <span>Cloud upload</span>
+            </div>
+            <div class="workflow-step">
+              <span class="step-number">2</span>
+              <span>Automated processing</span>
+            </div>
+            <div class="workflow-step">
+              <span class="step-number">3</span>
+              <span>AI-powered analysis</span>
+            </div>
+            <div class="workflow-step">
+              <span class="step-number">4</span>
+              <span>Real-time collaboration</span>
+            </div>
+          </div>
+          <div class="workflow-benefits">
+            <span class="benefit">✓ Minutes, not days</span>
+            <span class="benefit">✓ Infinitely scalable</span>
+            <span class="benefit">✓ Expert AI insights</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution Section -->
+  <section class="content-section" *ngIf="activeTab === 'solution'">
+    <div class="solution-content">
+      <div class="section-intro">
+        <h2>Why Archaios</h2>
+        <p class="lead-text">
+          A comprehensive cloud-native platform that transforms archaeological research 
+          through automation, AI intelligence, and collaborative tools.
+        </p>
+      </div>
+
+      <div class="features-showcase">
+        <div class="feature-card" *ngFor="let feature of solutionFeatures; let i = index" 
+             [style.animation-delay]="i * 0.1 + 's'">
+          <div class="feature-icon" [style.background]="feature.color + '20'" [style.border-color]="feature.color">
+            <svg *ngIf="feature.icon === 'cloud'" viewBox="0 0 24 24" fill="none" [attr.stroke]="feature.color" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+            </svg>
+            <svg *ngIf="feature.icon === 'automation'" viewBox="0 0 24 24" fill="none" [attr.stroke]="feature.color" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <svg *ngIf="feature.icon === 'workflow'" viewBox="0 0 24 24" fill="none" [attr.stroke]="feature.color" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="9" x2="15" y2="9"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            <svg *ngIf="feature.icon === 'ai'" viewBox="0 0 24 24" fill="none" [attr.stroke]="feature.color" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <svg *ngIf="feature.icon === 'chat'" viewBox="0 0 24 24" fill="none" [attr.stroke]="feature.color" stroke-width="2">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+            </svg>
+            <svg *ngIf="feature.icon === 'scale'" viewBox="0 0 24 24" fill="none" [attr.stroke]="feature.color" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="12" cy="19" r="2"/>
+              <circle cx="5" cy="12" r="2"/>
+              <circle cx="19" cy="12" r="2"/>
+            </svg>
+          </div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+
+      <div class="unique-features">
+        <h3>What Makes Archaios Unique</h3>
+        <div class="unique-grid">
+          <div class="unique-item">
+            <span class="unique-icon">⚡</span>
+            <h4>Scales effortlessly</h4>
+            <p>Multiple users, large regions, multi-day datasets? No problem.</p>
+          </div>
+          <div class="unique-item">
+            <span class="unique-icon">⚡</span>
+            <h4>Keeps humans in control</h4>
+            <p>Full control with customizable workflows for advanced users.</p>
+          </div>
+          <div class="unique-item">
+            <span class="unique-icon">⚡</span>
+            <h4>AI experts collaborate</h4>
+            <p>Multi-agent conversations based on real-world expert logic.</p>
+          </div>
+          <div class="unique-item">
+            <span class="unique-icon">⚡</span>
+            <h4>Open data blending</h4>
+            <p>LiDAR + satellite + semantic knowledge + graph relationships.</p>
+          </div>
+          <div class="unique-item">
+            <span class="unique-icon">⚡</span>
+            <h4>Gamified engagement</h4>
+            <p>Explorers contribute discoveries through a leaderboard.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+  <section class="content-section" *ngIf="activeTab === 'architecture'">
+    <div class="architecture-content">
+      <div class="section-intro">
+        <h2>High-Level Architecture</h2>
+        <p class="lead-text">
+          A sophisticated cloud-native system built on Azure's serverless and container-based services,
+          orchestrating complex workflows from data ingestion to AI-powered insights.
+        </p>
+      </div>
+
+      <div class="architecture-viewer">
+        <div class="stage-selector">
+          <button class="stage-btn" 
+                  *ngFor="let stage of architectureStages; let i = index"
+                  [class.active]="currentStage === i"
+                  (click)="goToStage(i)">
+            <span class="stage-number">{{ stage.id }}</span>
+            <span class="stage-title">{{ stage.title }}</span>
+          </button>
+        </div>
+
+        <div class="stage-display">
+          <div class="stage-content" *ngIf="architectureStages[currentStage]">
+            <div class="stage-info">
+              <h3>Stage {{ architectureStages[currentStage].id }}: {{ architectureStages[currentStage].title }}</h3>
+              <h4>{{ architectureStages[currentStage].subtitle }}</h4>
+              <p>{{ architectureStages[currentStage].description }}</p>
+              
+              <div class="stage-highlights">
+                <div class="highlight" *ngFor="let highlight of architectureStages[currentStage].highlights">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span>{{ highlight }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="stage-diagram">
+              <img [src]="architectureStages[currentStage].image" 
+                   [alt]="architectureStages[currentStage].title">
+            </div>
+          </div>
+
+          <div class="stage-navigation">
+            <button class="nav-btn prev" (click)="prevStage()" [disabled]="currentStage === 0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+              Previous
+            </button>
+            <div class="stage-indicators">
+              <span class="indicator" 
+                    *ngFor="let stage of architectureStages; let i = index"
+                    [class.active]="currentStage === i"
+                    (click)="goToStage(i)">
+              </span>
+            </div>
+            <button class="nav-btn next" (click)="nextStage()" [disabled]="currentStage === architectureStages.length - 1">
+              Next
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="architecture-overview">
+        <h3>System Overview</h3>
+        <div class="overview-points">
+          <div class="overview-item">
+            <span class="item-number">1️⃣</span>
+            <h4>Cloud-Native, Event-Driven Architecture</h4>
+            <p>Built fully on Azure's serverless and container-based services. Data uploads trigger event-driven workflows via Azure Blob Storage and Durable Functions.</p>
+          </div>
+          <div class="overview-item">
+            <span class="item-number">2️⃣</span>
+            <h4>Scalable LiDAR Processing Pipeline</h4>
+            <p>Durable Functions orchestrate processing jobs, launching Azure Container App Jobs to generate terrain products from raw point clouds.</p>
+          </div>
+          <div class="overview-item">
+            <span class="item-number">3️⃣</span>
+            <h4>Spectral Analysis via Google Earth Engine</h4>
+            <p>Integrates with GEE to produce NDVI, TrueColor, and FalseColor composites for environmental analysis.</p>
+          </div>
+          <div class="overview-item">
+            <span class="item-number">4️⃣</span>
+            <h4>Multi-Agent Semantic Analysis</h4>
+            <p>Microsoft's Semantic Kernel coordinates virtual agents to collaboratively analyze archaeological data.</p>
+          </div>
+          <div class="overview-item">
+            <span class="item-number">5️⃣</span>
+            <h4>Conversational Knowledge Retrieval</h4>
+            <p>Chat interface powered by Azure Cosmos DB's DiskANN vector similarity search for natural language queries.</p>
+          </div>
+          <div class="overview-item">
+            <span class="item-number">6️⃣</span>
+            <h4>Insights Delivery & User Engagement</h4>
+            <p>Synthesized findings surfaced in the Archaios Portal with gamification features for collaborative discovery.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technology Section -->
+  <section class="content-section" *ngIf="activeTab === 'technology'">
+    <div class="technology-content">
+      <div class="section-intro">
+        <h2>Technology Stack</h2>
+        <p class="lead-text">
+          Built with cutting-edge cloud services, AI frameworks, and processing technologies
+          to deliver a seamless archaeological discovery experience.
+        </p>
+      </div>
+
+      <div class="tech-categories">
+        <div class="tech-category azure">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+            </svg>
+            Azure Services
+          </h3>
+          <div class="tech-grid">
+            <div class="tech-item" *ngFor="let service of azureServices">
+              <div class="tech-icon azure-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect *ngIf="service.icon === 'functions'" x="3" y="3" width="18" height="18" rx="2"/>
+                  <path *ngIf="service.icon === 'containers'" d="M4 9h16M9 15h6M10 3v18M14 3v18"/>
+                  <path *ngIf="service.icon === 'storage'" d="M3 7h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zM3 7V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/>
+                  <circle *ngIf="service.icon === 'cosmos'" cx="12" cy="12" r="10"/>
+                  <path *ngIf="service.icon === 'durable'" d="M12 2v20M2 12h20"/>
+                </svg>
+              </div>
+              <div class="tech-details">
+                <h4>{{ service.name }}</h4>
+                <p>{{ service.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-category ai">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            AI & Machine Learning
+          </h3>
+          <div class="tech-grid">
+            <div class="tech-item" *ngFor="let capability of aiCapabilities">
+              <div class="tech-icon ai-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path *ngIf="capability.icon === 'kernel'" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/>
+                  <path *ngIf="capability.icon === 'openai'" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77"/>
+                  <path *ngIf="capability.icon === 'vectors'" d="M2 12h20M12 2v20"/>
+                  <circle *ngIf="capability.icon === 'agents'" cx="12" cy="5" r="2.5"/>
+                </svg>
+              </div>
+              <div class="tech-details">
+                <h4>{{ capability.name }}</h4>
+                <p>{{ capability.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-category processing">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Data Processing
+          </h3>
+          <div class="tech-grid">
+            <div class="tech-item" *ngFor="let feature of processingFeatures">
+              <div class="tech-icon processing-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path *ngIf="feature.icon === 'lidar'" d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                  <circle *ngIf="feature.icon === 'earth'" cx="12" cy="12" r="10"/>
+                  <path *ngIf="feature.icon === 'points'" d="M5 5h.01M10 5h.01M15 5h.01M20 5h.01"/>
+                  <path *ngIf="feature.icon === 'terrain'" d="M3 17l6-6 4 4 8-8"/>
+                </svg>
+              </div>
+              <div class="tech-details">
+                <h4>{{ feature.name }}</h4>
+                <p>{{ feature.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-integration">
+        <h3>Seamless Integration</h3>
+        <p>
+          All components work together through event-driven architecture, ensuring smooth data flow
+          from initial upload through AI analysis to final insights delivery.
+        </p>
+        <div class="integration-diagram">
+          <div class="integration-flow">
+            <div class="flow-item">Upload</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            <div class="flow-item">Process</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            <div class="flow-item">Analyze</div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            <div class="flow-item">Discover</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Ready to Transform Archaeological Discovery?</h2>
+      <p>Join the revolution in archaeological research with Archaios</p>
+      <div class="cta-buttons">
+        <button class="cta-btn primary" routerLink="/">
+          Start Exploring
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

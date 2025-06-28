@@ -1,0 +1,982 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~mapbox-gl/dist/mapbox-gl.css";
+@import "./_vars";
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap");
+@font-face {
+  font-family: "DIN Bold";
+  src: local("DIN Bold"), 
+    url('./assets/fonts/DIN/DIN-Bold.eot'),
+    url('./assets/fonts/DIN/DIN-Bold.eot?#iefix') format('embedded-opentype'),
+    url('./assets/fonts/DIN/DIN-Bold.woff2') format("woff2"),
+    url('./assets/fonts/DIN/DIN-Bold.woff') format("woff"),
+    url('./assets/fonts/DIN/DIN-Bold.ttf') format("truetype");
+}
+
+@font-face {
+  font-family: "DIN Medium";
+  src: local("DIN Medium"),
+    url('./assets/fonts/DIN/DIN-Medium.eot'),
+    url('./assets/fonts/DIN/DIN-Medium.eot?#iefix') format('embedded-opentype'),
+    url('./assets/fonts/DIN/DIN-Medium.woff2') format("woff2"),
+    url('./assets/fonts/DIN/DIN-Medium.woff') format("woff"),
+    url('./assets/fonts/DIN/DIN-Medium.ttf') format("truetype");
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* Global theme adjustments for archaeological UI */
+:root {
+  --primary: #bfa76a;
+  --primary-dark: #a68c4a;
+  --primary-light: #e0d3b8;
+  --bg-light: #f6f1e7;
+  --text-dark: #3e2c18;
+  --accent: #8b6b35;
+  --confirm: #4bb543;
+  --warning: #ffa600;
+  --danger: #dc3545;
+}
+
+body {
+  background: var(--bg-light);
+  color: var(--text-dark);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  overflow: hidden;
+  max-height: calc(100vh - 1rem) !important;
+  margin: 1rem 0.5rem 0;
+  padding-bottom: 85px; // Add padding to account for the footer
+}
+
+.leaflet-container .leaflet-marker-pane img.leaflet-marker-icon {
+  &:not(.incident-marker) {
+    margin-top: -25px !important;
+    margin-left: -25px !important;
+  }
+  z-index: 800 !important;
+}
+.leaflet-container
+  .leaflet-marker-pane
+  img[src="assets/images/map/point_rojo.svg"] {
+  animation: blinker 2s linear infinite;
+  z-index: 9999 !important;
+}
+
+.custom-tooltip-map-name-city {
+  top: -5px;
+  left: 0;
+  position: absolute;
+  padding: 2px 8px;
+  transition: 0.2s linear;
+  background-color: $problemColor;
+  color: $black;
+  font-size: 17px;
+  line-height: 20px;
+  letter-spacing: 2.5px;
+  @include font-family("DIN Bold");
+  text-transform: uppercase;
+  padding-left: 15px;
+  white-space: nowrap;
+  transform: translate(-80%, -105%);
+  &.black {
+    top: -6px;
+    background-color: $black;
+    color: $white;
+    border: 1px solid $white;
+    &::before {
+      top: -1px;
+      border-left: 1px solid $white;
+      border-top: 1px solid $white;
+      border-bottom: 1px solid $white;
+    }
+  }
+  &::after {
+    content: "";
+  }
+  &::before {
+    z-index: -1;
+    content: "";
+    position: absolute;
+    left: -10%;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background-color: inherit;
+    -webkit-transform: skewX(20deg);
+    -moz-transform: skewX(20deg);
+    -ms-transform: skewX(20deg);
+    transform: skewX(20deg);
+  }
+}
+
+.custom-detail-modal-marker-border {
+  top: 0;
+  left: 0;
+  position: absolute;
+  z-index: 402;
+  height: 90px !important;
+  width: 90px !important;
+  margin-top: -45px !important;
+  margin-left: -45px !important;
+}
+.custom-tooltip-map-name-border {
+  top: 0 !important;
+  left: 0 !important;
+  position: absolute;
+  z-index: 402;
+  height: 125px !important;
+  width: 125px !important;
+  margin-top: -86px !important;
+  margin-left: -65px !important;
+  transition: 0.2s linear;
+}
+
+.custom-tooltip-map-name-border-dos {
+  top: 0;
+  left: 0;
+  position: absolute;
+  z-index: 402;
+  height: 125px !important;
+  width: 125px !important;
+  margin-top: -86px !important;
+  margin-left: -65px !important;
+  display: flex;
+  justify-content: center;
+  transition: 0.2s linear;
+}
+
+.opacity-2 {
+  opacity: 0.2;
+}
+
+.call-action {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  button,
+  a {
+    flex-grow: 1;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    @include font-family("DIN Medium");
+    padding: 10px 20px;
+    @include bg-linear-gradient(white);
+    color: $white;
+    transition: background-color 0.3s ease-out;
+    &:hover,
+    &.active {
+      background-color: $bgCAbutton;
+      cursor: pointer;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      &:hover {
+        background-color: unset;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Add pulsating marker animation for badges */
+@keyframes pulseMarker {
+  0% { 
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.6;
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.2;
+  }
+}
+
+.toggle-view {
+  position: absolute;
+  top: 140px;
+  z-index: 699;
+  left: 50px;
+  display: flex;
+  gap: 16px;
+  a {
+    text-decoration: none;
+    color: $primaryColor;
+    padding: 10px 20px;
+    @include font-family("DIN Medium");
+    font-size: 20px;
+    @include bg-linear-gradient($black);
+    transition: all .3s ease-in-out;
+    &.active, &:hover{      
+      @include bg-linear-gradient($white, #55f9e233);
+    }
+  }
+}
+
+.backdrop {
+  position: absolute;
+  z-index: 700;
+  background: $bgBackdrop;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+
+// Breadcrumbs bar
+.breadcrumbs-bar {
+  display: flex;
+  align-items: center;
+  background: #e0d3b8;
+  color: #3e2c18;
+  padding: 0.5rem 1.5rem;
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #c2b28f;
+  .breadcrumb {
+    margin-right: 1rem;
+    cursor: pointer;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .side-menu-btn {
+    margin-left: auto;
+    background: #bfa76a;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 0.3rem 1rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    &:hover {
+      background: #a68c4a;
+    }
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .toggle-view {
+    left: calc(100% / 2 - 74px)  !important;
+    bottom: calc(0% + 88px) !important;
+    top: unset !important;
+  }
+
+  .call-action {
+    gap: 1rem !important;
+    button, a {
+      @include bg-linear-gradient($primaryColor);
+      color: $primaryColor !important;
+      letter-spacing: unset !important;
+    }
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .toggle-view {
+    bottom: calc(0% + 75px) !important;
+  }
+}
+
+/* Floating chat button */
+.floating-chat-btn {
+  position: fixed;
+  bottom: 2.2rem;
+  right: 2.2rem;
+  z-index: 1200;
+  background: linear-gradient(135deg, #bfa76a 60%, #f6f1e7 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 62px;
+  height: 62px;
+  box-shadow: 0 4px 24px #bfa76a55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.1rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s, background 0.2s;
+  outline: none;
+}
+
+.floating-chat-btn:hover {
+  background: linear-gradient(135deg, #a68c4a 60%, #e0d3b8 100%);
+  box-shadow: 0 8px 32px #bfa76a88;
+}
+
+.chat-modal-backdrop {
+  position: fixed;
+  z-index: 1300;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(60,40,20,0.18);
+}
+
+.side-menu.left {
+  left: 0;
+  right: auto;
+  border-right: 1px solid #c2b28f;
+  box-shadow: 2px 0 8px #bfa76a44;
+  animation: slideInLeft 0.2s;
+}
+
+@keyframes slideInLeft {
+  from { left: -350px; }
+  to { left: 0; }
+}
+
+.side-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(60, 40, 20, 0.2);
+  z-index: 1001;
+}
+
+/* Artifact badges for map */
+.arch-artifact-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, rgba(191, 167, 106, 0.15), rgba(191, 167, 106, 0.05));
+  border: 1px solid rgba(191, 167, 106, 0.3);
+  border-radius: 12px;
+  padding: 0.3rem 0.7rem;
+  font-family: 'Georgia', serif;
+  font-size: 0.85rem;
+  color: #8b6b35;
+  
+  .icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+      stroke: #8b6b35;
+    }
+  }
+}
+
+/* Time period indicator */
+.arch-time-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(224, 211, 184, 0.2);
+  border-radius: 12px;
+  padding: 0.2rem 0.6rem;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: #8b6b35;
+}
+
+/* Archaeological UI components */
+.arch-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(191, 167, 106, 0.15);
+  padding: 1.5rem;
+  border-left: 4px solid var(--primary);
+  font-family: 'Georgia', serif;
+}
+
+.arch-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-family: 'Montserrat', sans-serif;
+  
+  &.confirm {
+    background: rgba(75, 181, 67, 0.1);
+    color: var(--confirm);
+  }
+  
+  &.warning {
+    background: rgba(255, 166, 0, 0.1);
+    color: var(--warning);
+  }
+  
+  &.danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+  }
+  
+  &.neutral {
+    background: rgba(191, 167, 106, 0.1);
+    color: var(--accent);
+  }
+}
+
+/* Archaeological content section styling */
+.arch-section {
+  margin: 1.5rem 0;
+  
+  .arch-section-title {
+    color: var(--accent);
+    font-family: 'Georgia', serif;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--primary-light);
+  }
+}
+
+.chat-modal {
+  position: fixed;
+  z-index: 1301;
+  bottom: 30px;
+  right: 30px;
+  width: 450px;
+  max-width: 95vw;
+  height: 550px;
+  max-height: 70vh;
+  background: linear-gradient(to bottom, #f6f1e7, #fff);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(191, 167, 106, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeInChatModal 0.2s;
+  border: 1px solid rgba(191, 167, 106, 0.3);
+}
+
+.chat-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #8b6b35, #bfa76a);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chat-modal-header .chat-info h3 {
+  font-family: 'Georgia', serif;
+  font-weight: normal;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.chat-modal-body {
+  flex: 1;
+  padding: 1.5rem;
+  background: #f6f1e7;
+  overflow-y: auto;
+  flex-grow: 1;
+  
+  .chat-message {
+    margin-bottom: 1.2rem;
+    opacity: 0;
+    animation: fadeInMessage 0.3s forwards;
+    
+    &.bot {
+      padding-right: 20%;
+      .message-content {
+        background: #fff;
+        color: #3e2c18;
+        border-radius: 18px 18px 18px 4px;
+        padding-left: 30px;
+        font-family: 'Georgia', serif;
+        font-size: 1.05rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      }
+      .message-meta {
+        font-size: 0.85rem;
+        color: #bfa76a;
+        margin-top: 0.4rem;
+        margin-left: 0.5rem;
+      }
+    }
+    
+    &.user {
+      padding-left: 20%;
+      .message-content {
+        background: linear-gradient(135deg, #bfa76a, #a68c4a);
+        color: #fff;
+        border-radius: 18px 18px 4px 18px;
+        padding: 1rem 1.2rem;
+        margin-left: auto;
+        font-family: 'Montserrat', serif;
+        font-size: 1.05rem;
+      }
+      .message-meta {
+        text-align: right;
+        font-size: 0.85rem;
+        color: #bfa76a;
+        margin-top: 0.4rem;
+        margin-right: 0.5rem;
+      }
+    }
+    
+    .message-content {
+      &.with-icon {
+        .feature-icon {
+          font-size: 2rem;
+          margin-bottom: 0.8rem;
+        }
+        
+        ul {
+          margin: 0.8rem 0 0 1.2rem;
+          li {
+            margin: 0.4rem 0;
+            color: #3e2c18;
+            &::marker {
+              color: #bfa76a;
+            }
+          }
+        }
+      }
+      
+      &.quick-actions {
+        .action-buttons {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.8rem;
+          margin-top: 1rem;
+          
+          button {
+            background: #fff;
+            border: 1px solid #e0d3b8;
+            border-radius: 8px;
+            padding: 0.8rem;
+            color: #3e2c18;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            
+            &:hover {
+              background: #e0d3b8;
+              border-color: #bfa76a;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.chat-modal-footer {
+  padding: 1.2rem;
+  background: #fff;
+  border-top: 1px solid #f6f1e7;
+  
+  form {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.8rem;
+    background: #fff;
+    border: 1px solid #e0d3b8;
+    border-radius: 12px;
+    padding: 0.6rem;
+    align-items: center;
+    
+    .input-tools {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      
+      button {
+        background: none;
+        border: none;
+        padding: 0.4rem;
+        color: #bfa76a;
+        cursor: pointer;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        width: 32px;
+        
+        &:hover {
+          background: #f6f1e7;
+        }
+        
+        svg {
+          width: 20px;
+          height: 20px;
+          stroke: #bfa76a;
+        }
+      }
+    }
+    
+    input[type="text"] {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #3e2c18;
+      font-size: 0.95rem;
+      font-family: 'Georgia', serif;
+      padding: 0.5rem 0.2rem;
+      height: 42px;
+      
+      &::placeholder {
+        color: #bfa76a;
+        opacity: 0.7;
+        font-style: italic;
+      }
+    }
+    
+    .send-button {
+      background: linear-gradient(135deg, #bfa76a, #a68c4a);
+      border: none;
+      border-radius: 8px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      
+      &:hover {
+        transform: scale(1.05);
+      }
+      
+      svg {
+        width: 20px;
+        height: 20px;
+        stroke: #fff;
+      }
+    }
+  }
+}
+
+/* Header actions area */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.chat-icon
+{
+  width: 24px;
+  height: 24px;
+  stroke: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    transform: scale(1.1);
+    stroke: #bfa76a;
+  }
+}
+/* Fullscreen chat option */
+.chat-modal.fullscreen {
+  position: fixed;
+  top: 90px; /* Leave space for the header */
+  left: 0%;
+  right: 5%;
+  bottom: 0px;
+  width: 100%;
+  max-width: none;
+  height: 90vh;
+  max-height: none;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(139, 107, 53, 0.35);
+  z-index: 1500;
+  transform: none;
+  animation: expandFullscreen 0.3s ease-out;
+}
+
+.chat-modal.fullscreen .chat-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat-modal.fullscreen .chat-sessions-panel {
+  display: block;
+  width: 280px;
+  border-right: 1px solid rgba(191, 167, 106, 0.2);
+}
+
+.chat-modal.fullscreen .chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Needed for text truncation */
+}
+
+@keyframes expandFullscreen {
+  from { 
+    top: 30px;
+    left: 30px;
+    right: 30px;
+    bottom: 30px;
+    opacity: 0.7;
+  }
+  to { 
+    top: 80px;
+    left: 0%;
+    right: 0%;
+    bottom: 60px;
+    opacity: 1;
+  }
+}
+
+.chat-fullscreen-toggle {
+  background: none;
+  border: none;
+  color: #fff;
+  opacity: 0.8;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    opacity: 1;
+    background: rgba(0,0,0,0.1);
+  }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
+  }
+}
+
+/* Modify the chat modal body for fullscreen mode */
+.chat-modal.fullscreen .chat-modal-body {
+  max-height: none;
+  height: calc(100% - 140px); /* Adjust for header and footer height */
+}
+
+/* Ensure chat messages have proper spacing in fullscreen mode */
+.chat-modal.fullscreen .chat-message {
+  margin-bottom: 1.5rem;
+  
+  &.bot .message-content, 
+  &.user .message-content {
+    max-width: 60%;
+  }
+}
+
+@keyframes fadeInMessage {
+  from { 
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(60, 40, 20, 0.4); // Make backdrop more opaque
+  backdrop-filter: blur(4px);
+  z-index: 1400;
+}
+
+/* Ensure modals are above other content */
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1500;
+  pointer-events: none;
+  
+  &.active {
+    pointer-events: auto;
+  }
+}
+
+// Add these toast animations to your global styles file
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10000;
+}
+
+// Add styling for Earth.js tooltips
+.earth-tooltip.user-connection {
+  background: rgba(246, 241, 231, 0.9) !important;
+  color: #3e2c18 !important;
+  font-family: 'Georgia', 'Times New Roman', serif !important;
+  padding: 6px 10px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(191, 167, 106, 0.2) !important;
+  border: 1px solid rgba(191, 167, 106, 0.3) !important;
+  font-size: 14px !important;
+}
+
+/* Ensure site popup is always on top */
+.site-popup-backdrop {
+  z-index: var(--z-index-site-popup) !important;
+}
+
+.site-popup-container {
+  z-index: var(--z-index-site-popup-content) !important;
+}
+
+/* Ensure popups don't get cut off by header/footer */
+.site-popup {
+  padding-top: 80px !important;
+  padding-bottom: 85px !important;
+}
+
+/* Animation for popup entry from right */
+@keyframes slideInFromRight {
+  from { right: -480px; }
+  to { right: 0; }
+}
+
+.site-popup-container.open {
+  animation: slideInFromRight 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+  right: 0 !important;
+}
+
+/* Enhanced archaeological theme elements */
+.chat-modal-header {
+  background: linear-gradient(135deg, #8b6b35, #bfa76a);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chat-modal-header .chat-info h3 {
+  font-family: 'Georgia', serif;
+  font-weight: normal;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Button with ancient motif */
+.close-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Add a subtle papyrus texture to chat panels */
+.chat-sessions-panel {
+  background-image: url('data:image/png;base64,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');
+  background-blend-mode: overlay;
+}
+
+/* Approval status badge in site popup */
+.approval-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  
+  &.approved {
+    background: rgba(75, 181, 67, 0.1);
+    color: var(--confirm);
+    border: 1px solid rgba(75, 181, 67, 0.3);
+  }
+  
+  &.rejected {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+  }
+  
+  &.pending {
+    background: rgba(255, 166, 0, 0.1);
+    color: var(--warning);
+    border: 1px solid rgba(255, 166, 0, 0.3);
+    
+    /* Pulsating effect for pending status */
+    animation: pulseMarker 1.5s infinite;
+  }
+  
+  .status-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  &.approved .status-icon {
+    svg {
+      stroke: var(--confirm);
+    }
+  }
+  
+  &.rejected .status-icon {
+    svg {
+      stroke: var(--danger);
+    }
+  }
+  
+  &.pending .status-icon {
+    animation: spin 2s linear infinite;
+  }
+}
+
+/* Spinner animation for pending status */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

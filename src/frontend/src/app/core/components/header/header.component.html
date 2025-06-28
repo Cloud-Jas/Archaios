@@ -1,0 +1,172 @@
+<div class="header-bar unified">
+  <div class="header-left">
+     <span class="breadcrumb" (click)="emitLidarMenu()">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span>Home</span>
+    </span>
+    
+    <div class="logo-container">
+      <img src="assets/images/archaios.png" alt="Archaios" class="archaios-logo">
+      <div class="logo-divider"></div>
+    </div>
+   
+    <div class="site-selector" (click)="toggleSiteDropdown($event)">
+      <div class="active-site">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span>{{ currentSite?.name || 'My Uploads' }}</span>
+      </div>
+      <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      
+      <!-- Site dropdown menu with clickOutside directive -->
+      <div class="site-dropdown" *ngIf="showSiteDropdown" clickOutside (clickOutside)="closeSiteDropdown()">
+        <div class="site-dropdown-header">
+          <h4>Archaeological Sites</h4>
+        </div>
+        <div class="site-list">
+          <div *ngIf="isLoadingSites" class="loading-sites">
+            <div class="artifact-spinner"></div>
+            <span>Excavating site data...</span>
+          </div>
+          
+          <div class="site-item" *ngFor="let site of userSites" (click)="selectSite(site)">
+            <div class="site-icon" [class]="getSiteIconClass(site)">
+              <svg *ngIf="site.isKnownSite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
+              </svg>
+              <svg *ngIf="site.isPossibleArchaeologicalSite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              <svg *ngIf="!site.isKnownSite && !site.isPossibleArchaeologicalSite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <div class="site-info">
+              <div class="site-name">{{ site.name }}</div>
+              <div class="site-meta">
+                <span class="meta-date">{{ site.lastUpdated | date:'mediumDate' }}</span>
+                <span class="meta-tag" *ngIf="site.isKnownSite">Verified</span>
+                <span class="meta-tag possible" *ngIf="site.isPossibleArchaeologicalSite">Potential</span>
+              </div>
+            </div>
+            <div class="site-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="empty-state" *ngIf="!isLoadingSites && userSites.length === 0">
+            <div class="empty-illustration">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <p>No archaeological sites discovered yet. Upload LIDAR data to begin your expedition.</p>
+            <button class="upload-now-btn" (click)="emitLidarMenu()">Start Expedition</button>
+          </div>
+        </div>
+        
+        <div class="scroll-indicator">
+          <div class="scroll-dot"></div>
+          <div class="scroll-dot"></div>
+          <div class="scroll-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="header-center">
+    <form class="searcher" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <input placeholder="Search sites, artifacts, or features..." formControlName="searcher" />
+      <button type="submit" class="search-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-3.5-3.5"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+  
+  <div class="header-right">
+    <div class="tools">
+      <!-- Add view toggle before other tools -->
+      <button class="tool-btn view-toggle" [class.active]="is3DView" (click)="toggleView()" title="Toggle 3D View">
+        <svg *ngIf="!is3DView" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+        <svg *ngIf="is3DView" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 12h18M12 3v18"/>
+        </svg>
+      </button>
+      <button class="tool-btn" title="Analysis Tools" (click)="onAnalysisClick()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+      </button>
+      <button class="tool-btn" title="Notifications" (click)="onNotificationsClick()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </button>
+    </div>
+    
+    <img class="profile-img" 
+         [src]="(user$ | async)?.photoUrl || defaultUser.avatar" 
+         [alt]="(user$ | async)?.name || 'Profile'" 
+         (click)="onProfileClick($event)" />
+    
+    <div *ngIf="showProfileMenu" class="profile-menu" clickOutside (clickOutside)="closeProfileMenu()">
+      <div class="profile-menu-header">
+        <img [src]="(user$ | async)?.photoUrl || defaultUser.avatar" 
+             [alt]="(user$ | async)?.name || defaultUser.name" 
+             class="profile-menu-avatar" />
+        <div>
+          <div class="profile-menu-name">{{ (user$ | async)?.name || defaultUser.name }}</div>
+          <div class="profile-menu-email">{{ (user$ | async)?.username || defaultUser.email }}</div>
+          <div class="profile-menu-role">{{ (user$ | async)?.role || defaultUser.role }}</div>
+        </div>
+      </div>
+      <div class="profile-menu-options" (click)="onProfileMenuAction('profile')">
+        <button class="profile-option">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span>Profile</span>
+        </button>
+        <button class="profile-option">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+        <button class="profile-option" (click)="onProfileMenuAction('logout')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Log Out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

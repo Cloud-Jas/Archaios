@@ -1,0 +1,71 @@
+<div class="analysis-scroll-container">
+  <!-- Full page viewer when active - moved outside analysis-content to allow full page coverage -->
+  <div *ngIf="showViewer && activeFile" class="full-page-viewer">
+    <div class="viewer-header">
+      <h2>{{ getViewerTitle() }}</h2>
+      <div class="viewer-controls">
+        <button class="upload-btn" (click)="openFileUpload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload New File
+        </button>
+        <button class="close-btn" (click)="closeViewer()">×</button>
+      </div>
+    </div>
+    
+    <!-- File input hidden element -->
+    <input type="file" 
+      #fileInput 
+      style="display:none" 
+      (change)="handleFileUpload($event)"
+      accept=".las,.laz,.e57,.pcd,.ply,.tif,.tiff">
+    
+    <!-- Use our point cloud viewer for point cloud files -->
+    <app-point-cloud-viewer 
+      *ngIf="viewerType === 'point-cloud'"
+      [fileUrl]="activeFile.url" 
+      [fileType]="activeFile.type"
+      [fileName]="activeFile.name">
+    </app-point-cloud-viewer>
+    
+    <!-- Use geospatial viewer for other geospatial files -->
+    <app-geospatial-viewer 
+      *ngIf="viewerType === 'geospatial'"
+      [fileUrl]="activeFile.url" 
+      [fileType]="activeFile.type">
+    </app-geospatial-viewer>
+  </div>
+
+  <!-- Show tools grid only when viewer is not active -->
+  <div class="analysis-content" *ngIf="!showViewer">
+    <div class="analysis-page">
+      <div class="header">
+        <h1>Archaeological Point Cloud Analysis</h1>
+      </div>
+
+      <div class="tools-grid">
+        <div class="tool-card" *ngFor="let tool of tools">
+          <div class="tool-icon" [class]="tool.status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path [attr.d]="getIconPath(tool.icon)"/>
+            </svg>
+          </div>
+          <div class="tool-info">
+            <h3>{{ tool.name }}</h3>
+            <p>{{ tool.description }}</p>
+            <div class="tool-formats" *ngIf="tool.formats?.length">
+              <span *ngFor="let format of tool.formats" class="format-tag">{{ format }}</span>
+            </div>
+            <span class="status-badge" [class]="tool.status">{{ tool.status }}</span>
+          </div>
+          <button class="launch-btn" [disabled]="tool.status !== 'available'" (click)="launchTool(tool)">
+            Launch Tool
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

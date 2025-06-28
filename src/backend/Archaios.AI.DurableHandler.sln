@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archaios.AI.DurableHandler", "Archaios.AI.DurableHandler\Archaios.AI.DurableHandler.csproj", "{9EB88A4D-7F36-443A-AAAA-2561A13DF939}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archaios.AI.DataIngestor", "Archaios.AI.DataIngestor\Archaios.AI.DataIngestor.csproj", "{89CE07C2-B81F-473E-A10F-C8B3FFDE7B01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archaios.AI.Infrastructure", "Archaios.AI.Infrastructure\Archaios.AI.Infrastructure.csproj", "{FE1E644C-24CE-4283-BE9C-30BB437E18A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Archaios.AI.Shared", "Archaios.AI.Shared\Archaios.AI.Shared.csproj", "{467025EC-5A77-49B5-80A7-EB2F87ABCDD3}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Archaios.AI.LiDARProcessor", "Archaios.AI.LiDARProcessor\Archaios.AI.LiDARProcessor.pyproj", "{E7612EAA-6753-4E4E-BCF3-2ECC86BE8086}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Archaios.AI.GeeProcessor", "Archaios.AI.GeeProcessor\Archaios.AI.GeeProcessor.pyproj", "{F8612EAA-7753-4E4E-BCF3-2ECC86BE9086}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EB88A4D-7F36-443A-AAAA-2561A13DF939}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EB88A4D-7F36-443A-AAAA-2561A13DF939}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EB88A4D-7F36-443A-AAAA-2561A13DF939}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EB88A4D-7F36-443A-AAAA-2561A13DF939}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89CE07C2-B81F-473E-A10F-C8B3FFDE7B01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89CE07C2-B81F-473E-A10F-C8B3FFDE7B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89CE07C2-B81F-473E-A10F-C8B3FFDE7B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89CE07C2-B81F-473E-A10F-C8B3FFDE7B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE1E644C-24CE-4283-BE9C-30BB437E18A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE1E644C-24CE-4283-BE9C-30BB437E18A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE1E644C-24CE-4283-BE9C-30BB437E18A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE1E644C-24CE-4283-BE9C-30BB437E18A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{467025EC-5A77-49B5-80A7-EB2F87ABCDD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{467025EC-5A77-49B5-80A7-EB2F87ABCDD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{467025EC-5A77-49B5-80A7-EB2F87ABCDD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{467025EC-5A77-49B5-80A7-EB2F87ABCDD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7612EAA-6753-4E4E-BCF3-2ECC86BE8086}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7612EAA-6753-4E4E-BCF3-2ECC86BE8086}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8612EAA-7753-4E4E-BCF3-2ECC86BE9086}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8612EAA-7753-4E4E-BCF3-2ECC86BE9086}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {81D7CEE1-D723-487C-A237-3E17076EFB6B}
+	EndGlobalSection
+EndGlobal
