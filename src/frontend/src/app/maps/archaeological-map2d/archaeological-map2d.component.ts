@@ -27,7 +27,7 @@ export class ArchaeologicalMap2dComponent implements OnInit {
   zoomLevelChangedDetect: any;
   zoomLevel: number;
   dragOver = false;
-  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'potential'; // Changed default to potential
+  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'potential'; // Default
   idMarkerFrom3D: string;
   selectedSite: ArchaeologicalSite | null = null;
   showSitePopup: boolean = false;
@@ -40,6 +40,12 @@ export class ArchaeologicalMap2dComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Retrieve the last selected filter from localStorage
+    const savedFilter = localStorage.getItem('archaios-map2d-filter');
+    if (savedFilter && ['heritage', 'archaios', 'all', 'myupload', 'potential'].includes(savedFilter)) {
+      this.selectedFilter = savedFilter as 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential';
+    }
+
     // Subscribe to route parameter changes instead of just reading once
     this.routeSubscription = this.activateRoute.paramMap.subscribe(params => {
       this.idMarkerFrom3D = params.get('id') || '';
@@ -74,9 +80,9 @@ export class ArchaeologicalMap2dComponent implements OnInit {
       this.allSites = sites; // These are now BasicSiteInfo objects
       console.log('All sites loaded:', this.allSites.length);
       
-      // Changed to filter for potential sites by default
-      this.filteredLocations = locations.filter(site => site.isPossibleArchaeologicalSite);
-      this.locations = this.filteredLocations;
+      // Apply the current filter instead of the default potential sites filter
+      this.applyCurrentFilter();
+      
       this.showMap = true;     
       if (restore && this.map) {
         this.map.restoreMap();
@@ -88,7 +94,37 @@ export class ArchaeologicalMap2dComponent implements OnInit {
       }
     });
   }
-  
+
+  // Helper method to apply the current filter
+  private applyCurrentFilter(): void {
+    if (this.selectedFilter === 'heritage') {
+      this.locations = this.allLocations.filter(site => site.isKnownSite);
+    } else if (this.selectedFilter === 'archaios') {
+      this.locations = this.allLocations.filter(site => !site.isKnownSite);
+      if (this.map) {
+        this.map.paintConnection(this.connections);
+      }
+    } else if (this.selectedFilter === 'myupload') {
+      this.locations = this.allLocations.filter(site => site.isMyUpload);
+      if (this.map) {
+        this.map.paintConnection(this.connections);
+      }
+    } else if (this.selectedFilter === 'potential') {
+      this.locations = this.allLocations.filter(site => site.isPossibleArchaeologicalSite);
+      if (this.map) {
+        this.map.paintConnection(this.connections);
+      }
+    } else { // 'all'
+      this.locations = this.allLocations;
+      if (this.map) {
+        this.map.paintConnection(this.connections);
+      }
+    }
+    
+    // Update filteredLocations for consistency
+    this.filteredLocations = this.locations;
+  }
+
   // New method to handle site ID from route
   private handleSiteFromId(siteId: string): void {
     // Load detailed site information
@@ -231,38 +267,17 @@ export class ArchaeologicalMap2dComponent implements OnInit {
   }
   filterSites(filter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential'): void {
     this.selectedFilter = filter;
-
+    
+    // Save the selected filter to localStorage
+    localStorage.setItem('archaios-map2d-filter', filter);
+    
     if (this.map) {
       this.map.removeAllMarkers(); // Remove all markers and connections
     }
 
-    if (filter === 'heritage') {
-      this.locations = this.allLocations.filter(site => site.isKnownSite);
-    }
-    else if (filter === 'myupload') {
-      this.locations = this.allLocations.filter(site => site.isMyUpload);
-      if (this.map) {
-        this.map.paintConnection(this.connections);
-      }
-    }
-    else if (filter === 'archaios') {
-      this.locations = this.allLocations.filter(site => !site.isKnownSite);
-      if (this.map) {
-        this.map.paintConnection(this.connections);
-      }
-    }
-    else if (filter === 'potential') {
-      this.locations = this.allLocations.filter(site => site.isPossibleArchaeologicalSite);
-      if (this.map) {
-        this.map.paintConnection(this.connections);
-      }
-    } 
-    else {
-      this.locations = this.allLocations;
-      if (this.map) {
-        this.map.paintConnection(this.connections); 
-      }
-    }
+    // Apply the selected filter
+    this.applyCurrentFilter();
+    
     this.showSideMenu = false;
   }
 }

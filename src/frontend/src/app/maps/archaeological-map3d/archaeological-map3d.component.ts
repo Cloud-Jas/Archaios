@@ -29,7 +29,7 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
   mapInitialized = false;
   isLoading = true;
   showSideMenu = false; // For toggling the side menu
-  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'potential'; // Changed default to potential
+  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'potential'; // Default
   siteCounts = { heritage: 0, archaios: 0, potential: 0 }; // Add this property
 
   constructor(
@@ -40,6 +40,12 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.isLoading = true;
+    
+    // Retrieve the last selected filter from localStorage
+    const savedFilter = localStorage.getItem('archaios-map3d-filter');
+    if (savedFilter && ['heritage', 'archaios', 'all', 'myupload', 'potential'].includes(savedFilter)) {
+      this.selectedFilter = savedFilter as 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential';
+    }
   }
 
   ngOnDestroy(): void {
@@ -54,11 +60,9 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
         this.locations = locations;
         this.connections = connections;
 
-        // Apply default filter (Potential sites)
-        this.filteredLocations = this.locations.filter(site => site.isPossibleArchaeologicalSite);
-        this.filteredConnections = this.connections.filter(connection => {
-          return this.filteredLocations.some(site => site.id === connection.fromSiteId || site.id === connection.toSiteId);
-        });
+        // Apply saved filter instead of default
+        this.applyCurrentFilter();
+        
         this.archaeologicalMap3dService.initMap3D();
         this.archaeologicalMap3dService.addMarkers(this.filteredLocations);
 
@@ -81,23 +85,21 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
     });
   }
 
-  toggleSideMenu(): void {
-    this.showSideMenu = !this.showSideMenu;
-  }
-
-  filterSites(filter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential'): void {
-    this.selectedFilter = filter;
-
-    if (filter === 'heritage') {
+  // Helper method to apply the current filter
+  private applyCurrentFilter(): void {
+    if (this.selectedFilter === 'heritage') {
       this.filteredLocations = this.locations.filter(site => site.isKnownSite);
-    } else if (filter === 'archaios') {
+    } else if (this.selectedFilter === 'archaios') {
       this.filteredLocations = this.locations.filter(site => !site.isKnownSite);
-    } else if (filter === 'myupload') {
+      this.filteredConnections = this.connections.filter(connection => {
+        return this.filteredLocations.some(site => site.id === connection.fromSiteId || site.id === connection.toSiteId);
+      });
+    } else if (this.selectedFilter === 'myupload') {
       this.filteredLocations = this.locations.filter(site => site.isMyUpload);
       this.filteredConnections = this.connections.filter(connection => {
         return this.filteredLocations.some(site => site.id === connection.fromSiteId || site.id === connection.toSiteId);
       });
-    } else if (filter === 'potential') {
+    } else if (this.selectedFilter === 'potential') {
       this.filteredLocations = this.locations.filter(site => site.isPossibleArchaeologicalSite);
       this.filteredConnections = this.connections.filter(connection => {
         return this.filteredLocations.some(site => site.id === connection.fromSiteId || site.id === connection.toSiteId);
@@ -106,12 +108,26 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
       this.filteredLocations = this.locations;
       this.filteredConnections = this.connections;
     }
+  }
 
+  toggleSideMenu(): void {
+    this.showSideMenu = !this.showSideMenu;
+  }
+
+  filterSites(filter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential'): void {
+    this.selectedFilter = filter;
+    
+    // Save the selected filter to localStorage
+    localStorage.setItem('archaios-map3d-filter', filter);
+
+    // Use the common filter application logic
+    this.applyCurrentFilter();
     
     this.archaeologicalMap3dService.addMarkers(this.filteredLocations);
     if (filter === 'all' || filter === 'archaios' || filter === 'myupload' || filter === 'potential') {
       this.archaeologicalMap3dService.showLines(this.filteredConnections);
     }
+    
     setTimeout(() => {
       this.showSideMenu = false; // Close the side menu after filtering
     }, 100);

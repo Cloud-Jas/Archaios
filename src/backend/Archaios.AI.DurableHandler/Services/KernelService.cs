@@ -43,7 +43,7 @@ namespace Archaios.AI.DurableHandler.Services
                 throw new Exception("Error in GetChatMessageContentAsync", ex);
             }
         }
-        public async Task<ChatMessageContent> GetChatMessageContentAsync(Kernel kernel, ChatHistory chatHistory, OpenAIPromptExecutionSettings? promptExecutionSettings, bool isValidateTopographyResult = false)
+        public async Task<ChatMessageContent> GetChatMessageContentAsync(Kernel kernel, ChatHistory chatHistory, OpenAIPromptExecutionSettings? promptExecutionSettings = null, bool isValidateTopographyResult = false)
         {
             try
             {
