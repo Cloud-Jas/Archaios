@@ -249,12 +249,12 @@ export class ArchaeologicalDataService {
    */
   private getSiteMarkerColor(site: ArchaeologicalSite): MarkerColor {
 
-    var color= MarkerColor.YELLOW;
+    var color= MarkerColor.ARCHAIOS_SITE;
     if (site.isPossibleArchaeologicalSite) {
-      color = MarkerColor.RED;
+      color = MarkerColor.POTENTIAL_SITE;
     }
     else if (site.isKnownSite) {
-      color = MarkerColor.TURQUOISE;
+      color = MarkerColor.HERITAGE_SITE;
     }
     return color;
   }
