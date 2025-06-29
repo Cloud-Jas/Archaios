@@ -36,18 +36,18 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                 type = site.Type ?? string.Empty,
                 dangerLever = site.DangerLevel,
                 status = site.Status ?? string.Empty,
-                latitude= site.Latitude,
+                latitude = site.Latitude,
                 longitude = site.Longitude,
                 location = site.Location ?? $"point({site.Latitude}, {site.Longitude})",
                 category = site.Category ?? "Uncategorized",
                 url = site.Url ?? string.Empty,
                 lastUpdated = site.LastUpdated.ToUniversalTime().ToString("o"),
-                isKnownSite= site.IsKnownSite
+                isKnownSite = site.IsKnownSite
             };
 
             await _neo4jRepository.CreateNodeAsync("ArchaeologicalSite", "id", siteProperties);
 
-            var coordinates = new 
+            var coordinates = new
             {
                 name = $"{site.Name} Coordinates",
                 latitude = site.Latitude,
@@ -136,6 +136,106 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
             }
         }
 
+        public async Task<ArchaeologicalSite> GetSiteBySiteIdAsync(string Id)
+        {
+            if (string.IsNullOrEmpty(Id))
+                return null;
+            try
+            {
+                _logger.LogInformation($"Retrieving detailed site information for siteId {Id}");
+                
+                // Use Cypher directly to include all relevant data
+                var result = await _boltClient.Cypher
+                    .Match("(site:ArchaeologicalSite {id: $siteId})")
+                    .OptionalMatch("(site)-[:HAS_COMPONENT]->(component:SiteComponent)")
+                    .OptionalMatch("(user:User)-[:CREATED]->(site)")
+                    .OptionalMatch("(site)-[:HAS_ANALYSIS]->(analysis:AnalysisResult)")
+                    .OptionalMatch("(analysis)-[:DETECTED_FEATURE]->(feature:ArchaeologicalFeature)")
+                    .WithParam("siteId", Id)
+                    .With("site, collect(DISTINCT component) AS components, user, analysis, collect(DISTINCT feature) AS features")
+                    .With("site, components, user, collect({analysis: analysis, features: features}) AS analysisGroups")
+                    .Return((site, components, user, analysisGroups) => new
+                    {
+                        Site = site.As<ArchaeologicalSite>(),
+                        User = user.As<ArchaiosUser>(),
+                        Components = components.As<List<SiteComponent>>(),
+                        AnalysisGroups = analysisGroups.As<List<AnalysisGroupResult>>()
+                    })
+                    .ResultsAsync;
+
+                var siteResult = result.FirstOrDefault();
+                if (siteResult?.Site == null)
+                    return null;
+
+                // Process the site details similar to GetAllSitesAsync
+                siteResult.Site.ArchaiosUser = siteResult.User;
+                siteResult.Site.Components = siteResult.Components ?? new List<SiteComponent>();
+
+                // Deserialize agent analysis if available
+                if (!string.IsNullOrEmpty(siteResult.Site.SerializedAgentAnalysis))
+                {
+                    try
+                    {
+                        siteResult.Site.AgentAnalysis = JsonConvert.DeserializeObject<List<AgentChatMessage>>(siteResult.Site.SerializedAgentAnalysis);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error deserializing agent analysis for site {SiteId}", Id);
+                    }
+                }
+
+                // Process analysis results and features
+                if (siteResult.AnalysisGroups != null && siteResult.AnalysisGroups.Any())
+                {
+                    siteResult.Site.AnalysisResults = new Dictionary<string, AnalysisResult>();
+                    siteResult.Site.DetectedFeatures = new List<DetectedFeature>();
+
+                    foreach (var group in siteResult.AnalysisGroups.Where(g => g.analysis != null))
+                    {
+                        var analysisResult = new AnalysisResult
+                        {
+                            Caption = group.analysis.caption,
+                            GroupName = group.analysis.groupName,
+                            Tags = !string.IsNullOrEmpty(group.analysis.tags)
+                                ? group.analysis.tags.Split(',').ToList()
+                                : new List<string>(),
+                            Features = new List<DetectedFeature>()
+                        };
+
+                        if (group.features != null)
+                        {
+                            foreach (var feature in group.features.Where(f => f != null))
+                            {
+                                var detectedFeature = new DetectedFeature
+                                {
+                                    Name = feature.name,
+                                    Confidence = feature.confidence,
+                                    Description = feature.description,
+                                    Type = feature.featureType
+                                };
+
+                                analysisResult.Features.Add(detectedFeature);
+                                siteResult.Site.DetectedFeatures.Add(detectedFeature);
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(group.analysis.groupName))
+                        {
+                            siteResult.Site.AnalysisResults[group.analysis.groupName] = analysisResult;
+                        }
+                    }
+                }
+
+                _logger.LogInformation($"Successfully retrieved site with ID {Id}, components: {siteResult.Site.Components?.Count ?? 0}");
+                return siteResult.Site;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving archaeological site with Site ID {Id}");
+                throw new Exception($"Error retrieving archaeological site with Site ID {Id}", ex);
+            }
+        }
+
         public async Task UpdateArchaeologicalSiteComponentsAsync(List<SiteComponent> siteComponents)
         {
             var siteId = siteComponents?.FirstOrDefault()?.SiteId;
@@ -199,16 +299,16 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
             try
             {
                 _logger.LogInformation($"Updating agent analysis for site {siteId}");
-                
+
                 string serializedMessages = JsonConvert.SerializeObject(agentMessages);
-                
+
                 await _boltClient.Cypher
                     .Match("(site:ArchaeologicalSite {siteId: $siteId})")
                     .Set("site.serializedAgentAnalysis = $messages")
                     .WithParam("siteId", siteId)
                     .WithParam("messages", serializedMessages)
                     .ExecuteWithoutResultsAsync();
-                    
+
                 _logger.LogInformation($"Successfully updated agent analysis for site {siteId}");
             }
             catch (Exception ex)
@@ -253,12 +353,12 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                         AnalysisGroups = analysisGroups.As<List<AnalysisGroupResult>>()
                     })
                     .ResultsAsync;
-                
+
                 var mapped = result.Select(r =>
                 {
                     r.Site.ArchaiosUser = r.User;
                     r.Site.Components = r.Components ?? new List<SiteComponent>();
-                    
+
                     if (!string.IsNullOrEmpty(r.Site.SerializedAgentAnalysis))
                     {
                         try
@@ -276,19 +376,19 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                     {
                         r.Site.AnalysisResults = new Dictionary<string, AnalysisResult>();
                         r.Site.DetectedFeatures = new List<DetectedFeature>();
-                        
+
                         foreach (var group in r.AnalysisGroups.Where(g => g.analysis != null))
                         {
                             var analysisResult = new AnalysisResult
                             {
                                 Caption = group.analysis.caption,
                                 GroupName = group.analysis.groupName,
-                                Tags = !string.IsNullOrEmpty(group.analysis.tags) 
-                                    ? group.analysis.tags.Split(',').ToList() 
+                                Tags = !string.IsNullOrEmpty(group.analysis.tags)
+                                    ? group.analysis.tags.Split(',').ToList()
                                     : new List<string>(),
                                 Features = new List<DetectedFeature>()
                             };
-                            
+
                             if (group.features != null)
                             {
                                 foreach (var feature in group.features.Where(f => f != null))
@@ -300,19 +400,19 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                                         Description = feature.description,
                                         Type = feature.featureType
                                     };
-                                    
+
                                     analysisResult.Features.Add(detectedFeature);
                                     r.Site.DetectedFeatures.Add(detectedFeature);
                                 }
                             }
-                            
+
                             if (!string.IsNullOrEmpty(group.analysis.groupName))
                             {
                                 r.Site.AnalysisResults[group.analysis.groupName] = analysisResult;
                             }
                         }
                     }
-                    
+
                     return r.Site;
                 }).ToList();
                 return mapped;
@@ -340,7 +440,7 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                        components = components.As<List<SiteComponent>>()
                    })
                    .ResultsAsync;
-                
+
                 var mapped = result.Select(r =>
                 {
                     r.Site.ArchaiosUser = r.User;
@@ -372,7 +472,7 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                        components = components.As<List<SiteComponent>>()
                    })
                    .ResultsAsync;
-                
+
                 var mapped = result.Select(r =>
                 {
                     r.Site.ArchaiosUser = r.User;
@@ -395,13 +495,13 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
             try
             {
                 _logger.LogInformation($"Updating isPossibleArchaeologicalSite status for site {siteId} to {isPossibleArchaeologicalSite}");
-                
-                 await _boltClient.Cypher
-                    .Match("(site:ArchaeologicalSite {siteId: $siteId})")
-                    .Set("site.isPossibleArchaeologicalSite = $status")
-                    .WithParam("siteId", siteId)
-                    .WithParam("status", isPossibleArchaeologicalSite)
-                    .ExecuteWithoutResultsAsync();
+
+                await _boltClient.Cypher
+                   .Match("(site:ArchaeologicalSite {siteId: $siteId})")
+                   .Set("site.isPossibleArchaeologicalSite = $status")
+                   .WithParam("siteId", siteId)
+                   .WithParam("status", isPossibleArchaeologicalSite)
+                   .ExecuteWithoutResultsAsync();
             }
             catch (Exception ex)
             {
@@ -415,7 +515,7 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
             try
             {
                 _logger.LogInformation($"Adding like to component {componentId} by user {userId}");
-                
+
                 // First check if the user has already liked this component
                 var result = await _boltClient.Cypher
                     .Match("(site:ArchaeologicalSite {siteId: $siteId})-[:HAS_COMPONENT]->(component:SiteComponent)")
@@ -435,13 +535,13 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                 }
 
                 var likedByUsers = componentResult.LikedByUsers ?? new List<string>();
-                
+
                 // If user already liked, don't update
                 if (likedByUsers.Contains(userId))
                 {
                     return;
                 }
-                
+
                 // Update the likes count and add the user to the liked list
                 likedByUsers.Add(userId);
                 await _boltClient.Cypher
@@ -465,7 +565,7 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                     .WithParam("componentId", componentId)
                     .WithParam("timestamp", DateTime.UtcNow.ToString("o"))
                     .ExecuteWithoutResultsAsync();
-                    
+
                 _logger.LogInformation($"Successfully updated like for component {componentId}");
             }
             catch (Exception ex)
@@ -480,7 +580,7 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
             try
             {
                 _logger.LogInformation($"Removing like from component {componentId} by user {userId}");
-                
+
                 // First check if the component exists and the user has liked it
                 var result = await _boltClient.Cypher
                     .Match("(site:ArchaeologicalSite {siteId: $siteId})-[:HAS_COMPONENT]->(component:SiteComponent)")
@@ -500,13 +600,13 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                 }
 
                 var likedByUsers = componentResult.LikedByUsers ?? new List<string>();
-                
+
                 // If user hadn't liked, don't update
                 if (!likedByUsers.Contains(userId))
                 {
                     return;
                 }
-                
+
                 // Update the likes count and remove the user from the liked list
                 likedByUsers.Remove(userId);
                 await _boltClient.Cypher
@@ -527,13 +627,42 @@ namespace Archaios.AI.Infrastructure.Repositories.Neo4j
                     .WithParam("userId", userId)
                     .WithParam("componentId", componentId)
                     .ExecuteWithoutResultsAsync();
-                    
+
                 _logger.LogInformation($"Successfully removed like for component {componentId}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error unliking component {componentId}");
                 throw;
+            }
+        }
+
+        public async Task<List<BasicSiteInfo>> GetAllSitesBasicInfoAsync()
+        {
+            try
+            {
+                var result = await _boltClient.Cypher
+                    .Match("(site:ArchaeologicalSite)")
+                    .OptionalMatch("(user:User)-[:CREATED]->(site)")
+                    .Return((site, user) => new
+                    {
+                        Site = site.As<BasicSiteInfo>(),
+                        User = user.As<BasicUserInfo>()
+                    })
+                    .ResultsAsync;
+
+                var mappedSites = result.Select(r =>
+                {
+                    r.Site.ArchaiosUser = r.User;
+                    return r.Site;
+                }).ToList();
+
+                return mappedSites;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving basic site information");
+                throw new Exception("Error retrieving basic site information", ex);
             }
         }
     }

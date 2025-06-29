@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { ArchaeologicalSite, ArchaiosUser } from '../../maps/archaeological-map3d/archaeological-sites.service';
+import { ArchaeologicalSite, ArchaiosUser, BasicSiteInfo } from '../../maps/archaeological-map3d/archaeological-sites.service';
 import { AuthService } from '../../auth/services/auth.service';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, take } from 'rxjs/operators';
 import { SiteComponent } from '../../maps/models/archaeological-site.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
@@ -31,12 +31,16 @@ export class ArchaeologicalDataService {
   private userSitesSubject = new BehaviorSubject<ArchaeologicalSite[]>([]);
   private selectedSiteSubject = new BehaviorSubject<ArchaeologicalSite | null>(null);
   private uniqueUsersCountSubject = new BehaviorSubject<number>(0);
+  private basicSitesSubject = new BehaviorSubject<BasicSiteInfo[]>([]);
+  private siteDetailsCache: { [siteId: string]: ArchaeologicalSite } = {};
+  private uniqueUsersCount: number = 0;
   
   sites$ = this.sitesSubject.asObservable();
   userSites$ = this.userSitesSubject.asObservable();
   selectedSite$ = this.selectedSiteSubject.asObservable();
   uniqueUsersCount$ = this.uniqueUsersCountSubject.asObservable();
-
+  basicSites$ = this.basicSitesSubject.asObservable();
+  
   constructor(
     private authService: AuthService,
     private http: HttpClient
@@ -52,10 +56,57 @@ export class ArchaeologicalDataService {
   }
 
   /**
+   * Update stored basic archaeological site information
+   */
+  setBasicSiteInfo(sites: BasicSiteInfo[]): void {
+    console.log(`Setting ${sites.length} basic sites`);
+    this.basicSitesSubject.next(sites);
+    
+    // Calculate unique users
+    const userIds = new Set<string>();
+    sites.forEach(site => {
+      if (site.archaiosUser?.id && site.archaiosUser?.id !== 'archaios-id') {
+        userIds.add(site.archaiosUser.id);
+      }
+    });
+    this.uniqueUsersCount = userIds.size;
+    
+    // Convert BasicSiteInfo to simplified ArchaeologicalSite for user sites
+    // This is important for populating the userSites$ observable
+    const simplifiedSites = sites.map(site => {
+      return {
+        id: site.id,
+        name: site.name,
+        siteId: site.siteId,
+        type: site.type,
+        latitude: site.latitude,
+        longitude: site.longitude,
+        isKnownSite: site.isKnownSite,
+        isPossibleArchaeologicalSite: site.isPossibleArchaeologicalSite,
+        size: site.size,
+        archaiosUser: site.archaiosUser,
+        // Ensure lastUpdated is present for sorting
+        lastUpdated: site.lastUpdated || new Date().toISOString() 
+      } as ArchaeologicalSite;
+    });
+    
+    // Update userSites from basic info
+    this.updateUserSitesFromSites(simplifiedSites);
+    this.updateUniqueUsersCount();
+  }
+
+  /**
    * Get current value of sites
    */
   getSites(): ArchaeologicalSite[] {
     return this.sitesSubject.getValue();
+  }
+  
+  /**
+   * Get current value of basic site information
+   */
+  getBasicSiteInfo(): BasicSiteInfo[] {
+    return this.basicSitesSubject.getValue();
   }
 
   /**
@@ -105,7 +156,7 @@ export class ArchaeologicalDataService {
    * Calculate unique users count by grouping sites by user OIDs
    */
   private updateUniqueUsersCount(): void {
-    const sites = this.sitesSubject.getValue();
+    const sites = this.basicSitesSubject.getValue();
     
     // Use Set to track unique OIDs (excluding null/undefined values and system users)
     const uniqueUserOids = new Set<string>();
@@ -154,19 +205,30 @@ export class ArchaeologicalDataService {
    * Filter sites for the current user
    */
   private updateUserSites(): void {
+    this.updateUserSitesFromSites(this.sitesSubject.getValue());
+  }
+  
+  /**
+   * Filter sites for the current user from any site array
+   * @param sites Array of sites to filter
+   */
+  private updateUserSitesFromSites(sites: ArchaeologicalSite[]): void {
+    console.log(`Filtering user sites from ${sites.length} sites`);
+    
     // Use the async version with subscription instead of currentUserValue
-    this.authService.currentUser$.subscribe(currentUser => {
+    this.authService.currentUser$.pipe(take(1)).subscribe(currentUser => {
       if (!currentUser) {
+        console.log('No current user, clearing user sites');
         this.userSitesSubject.next([]);
         return;
       }
 
-      const sites = this.sitesSubject.getValue();
       const userSites = sites.filter(site => 
         site.archaiosUser?.id === currentUser.id || 
         site.archaiosUser?.oid === currentUser.oid
       );
       
+      console.log(`Found ${userSites.length} sites for user ${currentUser.name} (ID: ${currentUser.id})`);
       this.userSitesSubject.next(userSites);
     });
   }
@@ -195,5 +257,24 @@ export class ArchaeologicalDataService {
       color = MarkerColor.TURQUOISE;
     }
     return color;
+  }
+
+  /**
+   * Update site details in the service
+   * @param site Updated site information
+   */
+  updateSiteDetails(site: ArchaeologicalSite): void {
+    // Cache the site details for future use
+    this.siteDetailsCache[site.id] = site;
+
+    // Update the site in the full sites array if it exists there
+    const currentSites = this.sitesSubject.getValue();
+    const updatedIndex = currentSites.findIndex(s => s.id === site.id);
+    
+    if (updatedIndex >= 0) {
+      const updatedSites = [...currentSites];
+      updatedSites[updatedIndex] = site;
+      this.sitesSubject.next(updatedSites);
+    }
   }
 }

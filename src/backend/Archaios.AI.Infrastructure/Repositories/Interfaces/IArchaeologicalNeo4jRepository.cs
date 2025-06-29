@@ -8,10 +8,12 @@ namespace Archaios.AI.Infrastructure.Repositories.Interfaces
     {
         Task CreateArchaeologicalSiteAsync(ArchaeologicalSite site);
         Task<ArchaeologicalSite> GetSiteByIdAsync(string siteId);
+        Task<ArchaeologicalSite> GetSiteBySiteIdAsync(string Id);
         Task UpdateArchaeologicalSiteComponentsAsync(List<SiteComponent> siteComponents);
         Task UpdateSiteAgentAnalysisAsync(string siteId, List<AgentChatMessage> messages);
         Task CreateConstraintsAsync();
         Task<List<ArchaeologicalSite>> GetAllSitesAsync();
+        Task<List<BasicSiteInfo>> GetAllSitesBasicInfoAsync();
         Task<List<ArchaeologicalSite>> GetHeritageSitesAsync();
         Task<List<ArchaeologicalSite>> GetArchaiosSitesAsync();
         Task UpdateSiteIsPossibleArchaeologicalStatus(string siteId, bool isPossibleArchaeologicalSite);

@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger("Archaios.DTMGenerator")
 
 class DTMGenerator:
-    def __init__(self, grid_res=2.0, fallback_epsg=None, fill_nan=True, 
+    def __init__(self, grid_res=0.25, fallback_epsg=None, fill_nan=True, 
                  smooth=False, apply_lrm=False, lrm_scales=(1, 5), apply_whitetophat=False, sharpen=False):
         self.grid_res = grid_res
         self.fallback_epsg = fallback_epsg
@@ -25,7 +25,7 @@ class DTMGenerator:
         x, y, z = las.x, las.y, las.z
 
         # Inclusive filtering
-        ground_mask = np.isin(las.classification, [2, 1, 8])
+        ground_mask = np.isin(las.classification, [2])
         if not np.any(ground_mask):
             raise ValueError("No usable ground points found.")
         xg, yg, zg = x[ground_mask], y[ground_mask], z[ground_mask]

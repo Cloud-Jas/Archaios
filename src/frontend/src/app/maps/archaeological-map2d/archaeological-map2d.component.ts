@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Connection } from 'src/app/maps/models/connection.model';
 import { ArchaeologyLocationMap } from '../models/archaeology-location.model';
 
-import { ArchaeologicalSitesService } from '../archaeological-map3d/archaeological-sites.service';
+import { ArchaeologicalSitesService, BasicSiteInfo } from '../archaeological-map3d/archaeological-sites.service';
 import { ArchaeologicalMapComponent } from './archaeological-map/archaeological-map.component';
 import { ArchaeologicalSite } from '../models/archaeological-site.model';
 
@@ -27,7 +27,7 @@ export class ArchaeologicalMap2dComponent implements OnInit {
   zoomLevelChangedDetect: any;
   zoomLevel: number;
   dragOver = false;
-  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'archaios';
+  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'potential'; // Changed default to potential
   idMarkerFrom3D: string;
   selectedSite: ArchaeologicalSite | null = null;
   showSitePopup: boolean = false;
@@ -71,9 +71,11 @@ export class ArchaeologicalMap2dComponent implements OnInit {
     this.archaeologicalSitesService.getArchaeologicalSites().subscribe(({ sites, locations, connections }) => {
       this.allLocations = locations;
       this.connections = connections;
-      this.allSites = sites;
+      this.allSites = sites; // These are now BasicSiteInfo objects
       console.log('All sites loaded:', this.allSites.length);
-      this.filteredLocations = locations.filter(site => !site.isKnownSite); 
+      
+      // Changed to filter for potential sites by default
+      this.filteredLocations = locations.filter(site => site.isPossibleArchaeologicalSite);
       this.locations = this.filteredLocations;
       this.showMap = true;     
       if (restore && this.map) {
@@ -89,25 +91,45 @@ export class ArchaeologicalMap2dComponent implements OnInit {
   
   // New method to handle site ID from route
   private handleSiteFromId(siteId: string): void {
-    const targetSite = this.allSites.find(site => site.id === siteId);
-    if (targetSite) {
-      console.log('Target site found:', targetSite);
-      this.showSiteDetails(targetSite);
-      
-      // Find the corresponding location to center map
-      const targetLocation = this.allLocations.find(loc => loc.id === siteId);
-      if (targetLocation) {
-        this.selectSite(targetLocation);
+    // Load detailed site information
+    this.archaeologicalSitesService.getSiteDetails(siteId).subscribe(
+      (siteDetails) => {
+        console.log('Target site details loaded:', siteDetails);
+        this.showSiteDetails(siteDetails);
+        
+        // Find the corresponding location to center map
+        const targetLocation = this.allLocations.find(loc => loc.id === siteId);
+        if (targetLocation) {
+          this.selectSite(targetLocation);
+        }
+      },
+      (error) => {
+        console.error(`Error loading site details for ID ${siteId}:`, error);
       }
-    } else {
-      console.warn(`Site with ID ${siteId} not found`);
-    }
+    );
   }
 
   // Update showSiteDetails method
-  showSiteDetails(site: ArchaeologicalSite): void {
+  showSiteDetails(site: BasicSiteInfo | ArchaeologicalSite): void {
     console.log('Showing site details for:', site);
     
+    // If we only have basic info, get full details
+    if (!('components' in site)) {
+      this.archaeologicalSitesService.getSiteDetails(site.id).subscribe(
+        (fullSiteDetails) => {
+          this.displaySitePopup(fullSiteDetails);
+        },
+        (error) => {
+          console.error(`Error loading site details for ID ${site.id}:`, error);
+        }
+      );
+    } else {
+      // We already have full details
+      this.displaySitePopup(site as ArchaeologicalSite);
+    }
+  }
+
+  private displaySitePopup(site: ArchaeologicalSite): void {
     // Close any open dropdowns in the header
     this.closeSiteDropdowns();
     
@@ -169,25 +191,33 @@ export class ArchaeologicalMap2dComponent implements OnInit {
 
   onClickMarker(marker: LeafletEvent): void {
     console.log('Marker clicked:', marker);
-    // Handle marker click events
-    this.selectedPlace = marker.target;
-    
     // Use the map instance's proper method to set the view
     const mapInstance = this.map.getMapInstance();
     console.log('Map instance:', mapInstance);
     // Fix the marker.latlng property access using type assertion
     const markerWithLatLng = marker as any;
-    const targetSite = this.allSites.find(site => site.id === markerWithLatLng.target.customId);
-    if (targetSite) {
-      console.log('Target site found:', targetSite);
-      this.showSiteDetails(targetSite);
-    }
+    
+    // Center the map on the marker
     if (markerWithLatLng.latlng) {
       mapInstance.setView([markerWithLatLng.latlng.lat, markerWithLatLng.latlng.lng], 15);
     } else if (marker.target && (marker.target as any).getLatLng) {
       // Alternative approach if marker.latlng doesn't exist
       const latLng = (marker.target as any).getLatLng();
       mapInstance.setView([latLng.lat, latLng.lng], 15);
+    }
+    
+    // Get site details and display popup
+    const targetSiteId = markerWithLatLng.target.customId;
+    if (targetSiteId) {
+      this.archaeologicalSitesService.getSiteDetails(targetSiteId).subscribe(
+        (siteDetails) => {
+          console.log('Loaded site details:', siteDetails);
+          this.showSiteDetails(siteDetails);
+        },
+        (error) => {
+          console.error(`Error loading site details for ID ${targetSiteId}:`, error);
+        }
+      );
     }
   }
 

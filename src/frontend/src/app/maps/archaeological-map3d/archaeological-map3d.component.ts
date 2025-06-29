@@ -29,7 +29,7 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
   mapInitialized = false;
   isLoading = true;
   showSideMenu = false; // For toggling the side menu
-  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'archaios'; // Default filter
+  selectedFilter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential' = 'potential'; // Changed default to potential
   siteCounts = { heritage: 0, archaios: 0, potential: 0 }; // Add this property
 
   constructor(
@@ -54,8 +54,8 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
         this.locations = locations;
         this.connections = connections;
 
-        // Apply default filter (Archaios sites)
-        this.filteredLocations = this.locations.filter(site => !site.isKnownSite);
+        // Apply default filter (Potential sites)
+        this.filteredLocations = this.locations.filter(site => site.isPossibleArchaeologicalSite);
         this.filteredConnections = this.connections.filter(connection => {
           return this.filteredLocations.some(site => site.id === connection.fromSiteId || site.id === connection.toSiteId);
         });
@@ -63,7 +63,7 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
         this.archaeologicalMap3dService.addMarkers(this.filteredLocations);
 
         setTimeout(() => {
-          this.archaeologicalMap3dService.showLines(this.connections);
+          this.archaeologicalMap3dService.showLines(this.filteredConnections);
           this.mapInitialized = true;
           this.isLoading = false;
         }, 100);
@@ -117,7 +117,20 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
     }, 100);
   }
 
+  // Add a method to handle site selection
   selectSite(site: ArchaeologyLocationMap): void {
+    // First fly to the site location
     this.archaeologicalMap3dService.flyTo(site.position.lat, site.position.lng);
+    
+    // Then load detailed site information
+    this.archaeologicalSitesService.getSiteDetails(site.id).subscribe(
+      (siteDetails) => {
+        console.log('Loaded site details:', siteDetails);
+        // Handle site details (could emit event or update UI)
+      },
+      (error) => {
+        console.error(`Error loading site details for ID ${site.id}:`, error);
+      }
+    );
   }
 }

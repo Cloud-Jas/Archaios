@@ -22,6 +22,7 @@ historicalContext: {{historicalContext}}
 ## Topographic Image Analysis (LiDAR-Derived)
 
 - You are analyzing processed LiDAR imagery (Hillshade and Slope).
+- You should close examine the image for human-made landscape features.
 - Your primary goal is to detect human-made landscape features such as:
   - Earthworks (mounds, ditches, banks)
   - Enclosures (circular or rectilinear)

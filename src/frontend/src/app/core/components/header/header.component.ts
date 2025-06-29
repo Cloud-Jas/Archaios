@@ -79,9 +79,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.closeAllDropdowns();
     });
 
-    // Subscribe to user sites from the shared service
+    // Subscribe to user sites from the data service
     this.subscriptions.push(
       this.dataService.userSites$.subscribe(sites => {
+        console.log('User sites updated in header:', sites.length, sites); // Enhanced logging
         this.userSites = sites.sort((a, b) => {
           // Handle potentially undefined lastUpdated values
           const dateA = a.lastUpdated ? new Date(a.lastUpdated) : new Date(0);
@@ -89,7 +90,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
           return dateB.getTime() - dateA.getTime();
         });
         
-        this.recentUploads = [...this.userSites].slice(0, 2); // Show only top 2
+        // Set recent uploads
+        this.recentUploads = [...this.userSites].slice(0, 2); 
         
         if (this.userSites.length > 0 && !this.currentSite) {
           this.currentSite = this.userSites[0];
@@ -102,6 +104,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     // Subscribe to all sites to handle loading state
     this.subscriptions.push(
       this.dataService.sites$.subscribe(sites => {
+        if (sites.length > 0) {
+          this.isLoadingSites = false;
+        }
+      })
+    );
+
+    // Also subscribe to basic sites to ensure we get data
+    this.subscriptions.push(
+      this.dataService.basicSites$.subscribe(sites => {
+        // Just updating the loading state as userSites$ handles the actual data
         if (sites.length > 0) {
           this.isLoadingSites = false;
         }

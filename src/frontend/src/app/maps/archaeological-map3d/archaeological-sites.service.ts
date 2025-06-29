@@ -58,6 +58,26 @@ export interface ArchaeologicalSitesResponse {
   timestamp: string;
 }
 
+export interface BasicSiteInfo {
+  id: string;
+  name: string;
+  siteId: string;
+  type?: string;
+  latitude: number;
+  longitude: number;
+  isKnownSite?: boolean;
+  isPossibleArchaeologicalSite?: boolean;
+  size: string;
+  lastUpdated?: string; // Make sure lastUpdated is included
+  archaiosUser?: ArchaiosUser;
+}
+
+export interface ArchaeologicalSitesBasicResponse {
+  sites: BasicSiteInfo[];
+  count: number;
+  timestamp: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -138,11 +158,11 @@ export class ArchaeologicalSitesService {
     return `${size.toFixed(2)} ${units[unitLevel]}`;
   }
 
-  getArchaeologicalSites(): Observable<{ sites: ArchaeologicalSite[], locations: ArchaeologyLocationMap[], connections: Connection[] }> {
-    return this.http.get<ArchaeologicalSitesResponse>(`${this.baseUrl}/archaiosSites`)
+  getArchaeologicalSites(): Observable<{ sites: BasicSiteInfo[], locations: ArchaeologyLocationMap[], connections: Connection[] }> {
+    return this.http.get<ArchaeologicalSitesBasicResponse>(`${this.baseUrl}/archaiosSites`)
       .pipe(
         tap(response => {
-          this.dataService.setSites(response.sites);
+          this.dataService.setBasicSiteInfo(response.sites);
           this.updateSiteCounts(response.sites); // Update counts here
         }),
         map(response => {
@@ -150,10 +170,10 @@ export class ArchaeologicalSitesService {
           var currentUser = this.authService.getCurrentUser();
           const currentUserOid = currentUser?.oid;
           console.log('Current user OID:', currentUserOid);
-          const locations = response.sites.map(site => this.mapSiteToLocation(site, currentUserOid? currentUserOid : ''));
+          const locations = response.sites.map(site => this.mapBasicSiteToLocation(site, currentUserOid? currentUserOid : ''));
           const connections: Connection[] = [];
           
-          const sitesByUser: { [userId: string]: ArchaeologicalSite[] } = {};
+          const sitesByUser: { [userId: string]: BasicSiteInfo[] } = {};
           
           var filteredSites = response.sites.filter(site => site.archaiosUser?.oid !== 'archaios-oid');
           filteredSites.forEach(site => {
@@ -165,31 +185,23 @@ export class ArchaeologicalSitesService {
               sitesByUser[userId].push(site);
             }
           });
-
-/*           Object.values(sitesByUser).forEach(userSites => {
-            for (let i = 0; i < userSites.length - 1; i++) {
-              const site1 = userSites[i];
-              const site2 = userSites[i + 1];
-
-              connections.push({
-                startPoint: { lat: site1.latitude, lng: site1.longitude },
-                endPoint: { lat: site2.latitude, lng: site2.longitude },
-                fromSiteId: site1.id,
-                toSiteId: site2.id,
-                metadata: {
-                  type: 'user-connection',
-                  userId: site1.archaiosUser?.id,
-                  userName: site1.archaiosUser?.name || 'Unknown User'
-                }
-              });
-            }
-          }); */
+          
           return { sites, locations, connections };
         })
       );
   }
 
-  private mapSiteToLocation(site: ArchaeologicalSite, currentUserOid: string | null): ArchaeologyLocationMap {
+  getSiteDetails(siteId: string): Observable<ArchaeologicalSite> {
+    return this.http.get<ArchaeologicalSite>(`${this.baseUrl}/archaiosSites/${siteId}`)
+      .pipe(
+        tap(site => {
+          // Cache the detailed site in the data service
+          this.dataService.updateSiteDetails(site);
+        })
+      );
+  }
+
+  private mapBasicSiteToLocation(site: BasicSiteInfo, currentUserOid: string | null): ArchaeologyLocationMap {
     const isMyUpload = !!currentUserOid && 
                       !!site.archaiosUser?.oid && 
                       currentUserOid === site.archaiosUser.oid;
@@ -207,10 +219,9 @@ export class ArchaeologicalSitesService {
       } as Coordinates
     };
   }
-  
-  private getSiteMarkerColor(site: ArchaeologicalSite): MarkerColor {
 
-    var color= MarkerColor.YELLOW;
+  private getSiteMarkerColor(site: BasicSiteInfo | ArchaeologicalSite): MarkerColor {
+    var color = MarkerColor.YELLOW;
     if (site.isPossibleArchaeologicalSite) {
       color = MarkerColor.RED;
     }
