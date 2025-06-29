@@ -284,11 +284,7 @@ To test the complete pipeline:
    - Ensure storage directories have proper permissions
    - Check service account credentials are valid
 
-3. **Dependency failures in LiDARProcessor:**
-   - Verify PDAL and GDAL installations
-   - Check if PATH variables are correctly set
-
-4. **Authentication issues:**
+3. **Authentication issues:**
    - For local development, you may set `AUTH_ENABLED=false` in the GeeProcessor
    - For DurableHandler, you might need valid credential placeholders even in development
 
@@ -301,7 +297,6 @@ To test the complete pipeline:
 ## Additional Resources
 
 - [Azure Functions Documentation](https://docs.microsoft.com/en-us/azure/azure-functions/)
-- [PDAL Documentation](https://pdal.io/en/latest/)
 - [Google Earth Engine API Documentation](https://developers.google.com/earth-engine/guides/getstarted)
 - [Neo4j Documentation](https://neo4j.com/docs/)
 - [Azure Cosmos DB Documentation](https://docs.microsoft.com/en-us/azure/cosmos-db/)
