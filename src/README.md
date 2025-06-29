@@ -20,25 +20,50 @@ During my research into how archaeologists handle LiDAR datasets today, one thin
 ⚡ **Open data blending** — LiDAR + satellite + semantic knowledge + graph relationships.</br>
 ⚡ **Gamified engagement** — explorers and archaeologists can contribute discoveries through a leaderboard, making the experience both serious and fun.</br>
 
+# Findings:
+
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F0482f6ae5232dfc351cf4f4dfab640e4%2Fhillshade%20(15).png?generation=1751138011286525&alt=media)
+
+Live Url: https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/2d/bfedafca-8c4b-45ec-aae1-98c752e17a05
+
 # Technical Highlights: Advanced LiDAR Processing Pipeline
 
 Archaios includes a sophisticated LiDAR processing system with several key technical capabilities:
 
 1️⃣ **Ground Classification & Surface Modeling**
-- **Intelligent Ground Detection:** When LiDAR data lacks classification, Archaios employs a grid-based progressive densification algorithm that divides the terrain into cells, identifies the lowest points as ground seeds, and expands ground classification based on configurable elevation thresholds.
+- **Intelligent Ground Classification:** When LiDAR data lacks classification, Archaios employs a grid-based progressive densification algorithm that divides the terrain into cells, identifies the lowest points as ground seeds, and expands ground classification based on configurable elevation thresholds.
 - **Advanced DTM Generation Pipeline:** The DTM workflow involves multiple refinement stages:
-  - Statistical outlier removal to eliminate noise points
-  - Progressive densification ground classification
-  - Customizable grid interpolation at user-defined resolutions
-  - Void filling using distance-transform-based interpolation
-  - Optional terrain smoothing with configurable median and Gaussian filters
-  - Local Relief Model (LRM) computation that enhances subtle archaeological features by removing regional topography
-- **High-fidelity DSM Processing:** Creates accurate surface models by selecting maximum elevation points in each grid cell, preserving critical archaeological features like mounds, depressions, and structural remains.
+  - Statistical outlier removal to eliminate noise points (with configurable standard deviation ratio and neighbor count)
+  - Progressive densification ground classification with adjustable cell size (0.5-2.0m) and slope thresholds
+  - Adaptive grid interpolation optimized for point density (0.5-2.0m resolution)
+  - Void filling using distance-transform-based interpolation that maintains terrain continuity
+  - Optional terrain smoothing with configurable median (3×3) and Gaussian filters
+  - Multi-scale Local Relief Model (LRM) computation with dual-scale analysis (sigma 1-5) to enhance archaeological micro-topography
+  - White top-hat morphological filtering for micro-relief enhancement
+  - Laplacian sharpening for feature edge preservation
+- **High-fidelity DSM Processing:** Creates accurate surface models by:
+  - Dynamically adjusting grid resolution based on point density analysis
+  - Implementing specialized E57 point cloud handling with artifact detection and mitigation
+  - Employing robust percentile-based bounds to eliminate outlier effects
+  - Using sophisticated hole-filling algorithms with nearest-neighbor interpolation
+  - Applying format-specific optimizations for LAS/LAZ vs E57-derived point clouds
 
 2️⃣ **Multi-mode Terrain Visualization**
-- **Directional Sensitivity Analysis:** The system generates standard hillshades with user-defined azimuth/altitude parameters, plus advanced multi-directional hillshades that combine 8 illumination angles to reveal features regardless of their orientation to light sources—critical for detecting linear archaeological features.
-- **Enhanced Terrain Analytics:** Computes gradient-based slope models with configurable units (degrees/percent) and clipping ranges, revealing subtle changes in terrain that might indicate ancient roads, terracing, or building foundations.
-- **Integrated Visualization Pipeline:** Each terrain product (DTM, DSM, Hillshade, Slope) is automatically converted to optimized visualization formats with archaeologically relevant color schemes selected based on the data characteristics.
+- **Advanced Hillshade Generation:** The system employs:
+  - Standard hillshade analysis with precise control of azimuth (0-360°), altitude (0-90°), and vertical exaggeration
+  - Gaussian smoothing options for noise reduction while preserving archaeological features
+  - Contrast stretching with percentile-based normalization (2-98%) for optimal visualization
+  - Complete customization of lighting parameters for feature emphasis
+- **Multi-directional Illumination Analysis:** The platform implements:
+  - Customizable azimuth arrays for comprehensive terrain inspection
+  - 8-direction composite illumination that averages hillshades from cardinal and ordinal directions
+  - Adaptive contrast enhancement for feature visibility regardless of orientation
+  - Statistical blending of illumination models to maximize terrain detail
+- **Enhanced Terrain Analytics:** Computes:
+  - Gradient-based slope models with configurable output units (degrees/percent)
+  - Intelligent cell size handling that preserves terrain detail
+  - Adaptive clipping ranges (0-60° default) to highlight subtle topographic changes
+  - Masked processing to maintain data integrity at terrain edges
 
 3️⃣ **Cloud-Native Workflow Integration**
 - **Seamless Azure Integration:** Processing is entirely orchestrated through Azure Durable Functions, which coordinate the workflow across cloud services, maintain processing state, and handle retries/failures.
@@ -203,14 +228,19 @@ This comprehensive analytical approach transforms raw data into actionable archa
 
 1️⃣ **Cloud-Native, Event-Driven Architecture**
 Archaios is built fully on Azure’s serverless and container-based services. Data uploads (LiDAR LAS/LAZ files, field reports, journals) trigger event-driven workflows via Azure Blob Storage and Durable Functions.
+
 2️⃣ **Scalable LiDAR Processing Pipeline**
 Durable Functions orchestrate processing jobs, launching Azure Container App Jobs running Python-based LiDAR modules to generate terrain products — DTM, DSM, Hillshade, and Slope models — from raw point clouds.
+
 3️⃣ **Spectral Analysis via Google Earth Engine**
 A sub-orchestrator integrates with Google Earth Engine (GEE), producing NDVI, TrueColor, and FalseColor composites based on geographic coordinates to support environmental and vegetation analysis.
+
 4️⃣ **Multi-Agent Semantic Analysis**
 Processed datasets enter the Semantic Kernel Pipeline. Microsoft’s Semantic Kernel Multi-Agent Framework coordinates virtual agents (Terrain Specialist, Environmental Analyst, Archaeology Analyst) to collaboratively analyze data.
+
 5️⃣ Conversational Knowledge Retrieval with Vector Search
 The system features a chat-based interface that allows users to query accumulated field reports, journals, and historical data. Powered by Azure Cosmos DB's DiskANN vector similarity search, the chat engine retrieves semantically relevant information, enabling archaeologists to have natural conversations with the system and explore historical context interactively.
+
 6️⃣ **Insights Delivery & User Engagement**
 Synthesized findings and site evaluations are surfaced in the Archaios Portal, supported by OpenAI language models for reasoning and summarization. Gamification (leaderboards, notifications) keeps users engaged in collaborative archaeological discovery.
 
@@ -221,14 +251,19 @@ Synthesized findings and site evaluations are surfaced in the Archaios Portal, s
 
 1️⃣ **Unified Ingestion Portal**
 Users upload both raw LiDAR data (LAS/LAZ) and supporting research documents (field reports, journals, historical records) directly through the Archaios Portal.
+
 2️⃣ **Scalable LiDAR Upload Handling**
 Large LiDAR files are automatically chunked into smaller parts for efficient streaming into Azure Blob Storage, ensuring reliable uploads even for massive datasets.
+
 3️⃣ **Event-Driven Processing Trigger**
 Once uploads complete, HTTP triggers activate Azure Durable Functions, orchestrating downstream preprocessing pipelines dynamically based on incoming data volume.
+
 4️⃣ **Secure Research Document Storage**
 Text-based research materials are securely stored in Azure Blob Storage alongside LiDAR data, forming a unified data lake for archaeological analysis.
+
 5️⃣ **Semantic Document Indexing**
 A Document Indexer processes uploaded documents, splitting them into smaller sections and generating semantic embeddings using OpenAI’s embedding models.
+
 6️⃣ **Chat-Enabled Knowledge Retrieval**
 Generated embeddings are stored in Azure Cosmos DB with DiskANN indexing, powering Archaios' chat interface, where users can query and retrieve relevant historical context through natural language conversations.
 
@@ -244,10 +279,13 @@ The LiDAR processing flow begins with a Durable Function Orchestration Trigger, 
 
 1️⃣ **Extract LiDAR Metadata:**
 The system first extracts metadata from the uploaded point cloud files, determining parameters such as coordinate reference systems, spatial bounds, and data resolution.
+
 2️⃣ **Initiate Processing:**
 The Durable Function then triggers downstream processing by submitting tasks into the Azure Container Environment, where dedicated LiDAR Processor jobs convert the raw point cloud data into terrain models (DTM, DSM, Hillshade, Slope).
+
 3️⃣ **Wait For External Event:**
 Since the heavy LiDAR processing occurs asynchronously in containers, the Durable Workflow pauses and waits for an external event notification indicating that processing has completed successfully.
+
 4️⃣ **Instantiate LiDAR Node & Sub-Orchestrator:**
 Once processing is complete, a specialized LiDAR Node and GEE Sub-Orchestrator are launched, preparing the data for downstream analysis by the AI multi-agent system.
 
@@ -275,14 +313,37 @@ All computationally intensive processing is isolated into the Azure Container En
 ![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F59cf6d7fbb105f27a5b124df1c845f83%2FSlide5.JPG?generation=1750702281037373&alt=media)
 
 1️⃣ **Semantic Kernel Multi-Agent Framework**
-Archaios leverages Microsoft’s Semantic Kernel Multi-Agent Orchestration to simulate virtual expert collaboration across multiple specialized agents.
+Archaios leverages Microsoft's Semantic Kernel Multi-Agent Orchestration to simulate virtual expert collaboration across multiple specialized agents.
+
 2️⃣ **Pre-Analysis Image Analyzer**
 An initial Image Analyzer automatically evaluates processed outputs (DTM, DSM, Hillshade, NDVI, spectral data) to detect terrain anomalies, vegetation patterns, and topographical changes.
+
 3️⃣ **Automated Identification of Areas of Interest**
 The Image Analyzer highlights regions potentially indicating archaeological relevance — such as unnatural elevation patterns or vegetation disturbances — based on geospatial indicators.
+
 4️⃣ **Agent-Led Collaborative Reasoning**
-Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer’s findings in combination with historical data.
+Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer's findings in combination with historical data.
+
 5️⃣ ** Integrated Contextual Knowledge**
 Agents incorporate chat-driven insights from the Cosmos DB DiskANN-powered semantic knowledge base, enriching their assessments with historical context.
+
 6️⃣ **Intelligent Site Evaluation**
 Through iterative reasoning and summarization, the AI agents generate synthesized assessments highlighting promising archaeological sites for human review.
+
+# Developer Resources
+
+## Environment Setup and Configuration
+
+To get started with Archaios development, please refer to the following documentation:
+
+- [Local Development Environment Setup](../docs/local_development_setup.md) - Complete guide for setting up DurableHandler, LiDARProcessor, and GeeProcessor
+- [API Documentation](../docs/api_reference.md) - API endpoints and usage examples
+
+## Prerequisites
+
+- Azure Functions Core Tools v4.x
+- .NET 8.0 SDK
+- Python 3.10+
+- Docker Desktop
+- Neo4j Database (local or cloud)
+- Google Earth Engine account with service account credentials

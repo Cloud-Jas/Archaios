@@ -20,7 +20,6 @@ During my research into how archaeologists handle LiDAR datasets today, one thin
 ⚡ **Open data blending** — LiDAR + satellite + semantic knowledge + graph relationships.</br>
 ⚡ **Gamified engagement** — explorers and archaeologists can contribute discoveries through a leaderboard, making the experience both serious and fun.</br>
 
-
 # Findings:
 
 ![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F0482f6ae5232dfc351cf4f4dfab640e4%2Fhillshade%20(15).png?generation=1751138011286525&alt=media)
@@ -314,7 +313,7 @@ All computationally intensive processing is isolated into the Azure Container En
 ![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F59cf6d7fbb105f27a5b124df1c845f83%2FSlide5.JPG?generation=1750702281037373&alt=media)
 
 1️⃣ **Semantic Kernel Multi-Agent Framework**
-Archaios leverages Microsoft’s Semantic Kernel Multi-Agent Orchestration to simulate virtual expert collaboration across multiple specialized agents.
+Archaios leverages Microsoft's Semantic Kernel Multi-Agent Orchestration to simulate virtual expert collaboration across multiple specialized agents.
 
 2️⃣ **Pre-Analysis Image Analyzer**
 An initial Image Analyzer automatically evaluates processed outputs (DTM, DSM, Hillshade, NDVI, spectral data) to detect terrain anomalies, vegetation patterns, and topographical changes.
@@ -323,10 +322,28 @@ An initial Image Analyzer automatically evaluates processed outputs (DTM, DSM, H
 The Image Analyzer highlights regions potentially indicating archaeological relevance — such as unnatural elevation patterns or vegetation disturbances — based on geospatial indicators.
 
 4️⃣ **Agent-Led Collaborative Reasoning**
-Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer’s findings in combination with historical data.
+Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer's findings in combination with historical data.
 
-5️⃣ **Integrated Contextual Knowledge**
+5️⃣ ** Integrated Contextual Knowledge**
 Agents incorporate chat-driven insights from the Cosmos DB DiskANN-powered semantic knowledge base, enriching their assessments with historical context.
 
 6️⃣ **Intelligent Site Evaluation**
 Through iterative reasoning and summarization, the AI agents generate synthesized assessments highlighting promising archaeological sites for human review.
+
+# Developer Resources
+
+## Environment Setup and Configuration
+
+To get started with Archaios development, please refer to the following documentation:
+
+- [Local Development Environment Setup](/docs/local_development_setup.md) - Complete guide for setting up DurableHandler, LiDARProcessor, and GeeProcessor
+- [API Documentation](/docs/api_reference.md) - API endpoints and usage examples
+
+## Prerequisites
+
+- Azure Functions Core Tools v4.x
+- .NET 8.0 SDK
+- Python 3.10+
+- Docker Desktop
+- Neo4j Database (local or cloud)
+- Google Earth Engine account with service account credentials
