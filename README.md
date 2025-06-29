@@ -26,6 +26,10 @@ During my research into how archaeologists handle LiDAR datasets today, one thin
 
 Live Url: https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/2d/bfedafca-8c4b-45ec-aae1-98c752e17a05
 
+# Demo walkthrough video:
+
+https://youtu.be/I9DRuY2fL58
+
 # Technical Highlights: Advanced LiDAR Processing Pipeline
 
 Archaios includes a sophisticated LiDAR processing system with several key technical capabilities:
