@@ -324,7 +324,7 @@ The Image Analyzer highlights regions potentially indicating archaeological rele
 4️⃣ **Agent-Led Collaborative Reasoning**
 Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer's findings in combination with historical data.
 
-5️⃣ ** Integrated Contextual Knowledge**
+5️⃣ **Integrated Contextual Knowledge**
 Agents incorporate chat-driven insights from the Cosmos DB DiskANN-powered semantic knowledge base, enriching their assessments with historical context.
 
 6️⃣ **Intelligent Site Evaluation**
