@@ -33,6 +33,8 @@ namespace Archaios.AI.Shared.Models
         
         [JsonProperty("size")]
         public string Size { get; set; }
+        [JsonProperty("lastUpdated")]
+        public DateTime LastUpdated { get; set; }
     }
     
     public class BasicUserInfo
