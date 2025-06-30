@@ -16,6 +16,7 @@ import {
   LatLngExpression,
   Map,
   tileLayer,
+  Marker,
 } from 'leaflet';
 import { MarkerColor } from '../../enums';
 import { Connection } from '../../models/connection.model';
@@ -28,6 +29,7 @@ import { ArchaeologicalSiteType } from '../../enums/archaeological-site-type.enu
 import { ArchaeologicalStatus } from '../../enums/archaeological-status.enum';
 import { environment } from '../../../../environments/environment';
 import { UtilMapService } from '../../map2d/map/util-map.service';
+import 'leaflet.markercluster';
 
 @Component({
   selector: 'archaios-map',
@@ -48,6 +50,9 @@ export class ArchaeologicalMapComponent implements OnInit {
   idMarker: string;
   isNecesaryAddOpacity: boolean;
   isNecesaryCenterBounds: boolean;
+  
+  // Add markerClusterGroup property to manage the clusters
+  private markerClusterGroup: L.MarkerClusterGroup;
 
   get connections(): Connection[] {
     return this._connections;
@@ -130,6 +135,18 @@ export class ArchaeologicalMapComponent implements OnInit {
 
   onMapReady(map: any): void {
     this.map = map;
+    
+    // Initialize the marker cluster group
+    this.markerClusterGroup = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40,
+      disableClusteringAtZoom: 10, // Disable clustering at high zoom levels
+      spiderfyOnMaxZoom: true,
+      iconCreateFunction: this.createClusterIcon.bind(this)
+    });
+    
+    this.map.addLayer(this.markerClusterGroup);
+    
     this.paintMarkers(this.places);
     this.paintConnection(this.connections);
     
@@ -153,135 +170,226 @@ export class ArchaeologicalMapComponent implements OnInit {
 
     this.searcherService.searched.subscribe((site) => {
       if(site && site.latitude && site.longitude) {
-      this.map.flyTo(latLng(site.latitude, site.longitude), 8);
+        this.map.flyTo(latLng(site.latitude, site.longitude), 8);
       }
+    });
+  }
+  
+  // Custom cluster icon creator
+  private createClusterIcon(cluster: any): L.DivIcon {
+    const markers = cluster.getAllChildMarkers();
+    
+    // Determine the dominant marker type in this cluster
+    let heritageSites = 0;
+    let archaiosSites = 0;
+    let potentialSites = 0;
+    
+    markers.forEach((marker: any) => {
+      if (marker.isKnownSite) {
+        heritageSites++;
+      } else if (marker.isPossibleArchaeologicalSite) {
+        potentialSites++;
+      } else {
+        archaiosSites++;
+      }
+    });
+    
+    // Determine the dominant class
+    let dominantClass = 'archaeological-cluster';
+    if (heritageSites >= archaiosSites && heritageSites >= potentialSites) {
+      dominantClass += ' heritage-dominant';
+    } else if (potentialSites >= heritageSites && potentialSites >= archaiosSites) {
+      dominantClass += ' potential-dominant';
+    } else {
+      dominantClass += ' archaios-dominant';
+    }
+    
+    // Create SVG marker with count
+    const count = cluster.getChildCount();
+    
+    return L.divIcon({
+      html: `<div class="cluster-marker"><span>${count}</span></div>`,
+      className: dominantClass,
+      iconSize: L.point(40, 40)
     });
   }
 
-  paintMarkers(places: ArchaeologyLocationMap[]) {
-    // Group nearby markers first
-    const markerGroups = this.groupNearbyMarkers(places);
-    
-    // Add markers with appropriate offsets where needed
-    Object.values(markerGroups).forEach(group => {
-      if (group.length === 1) {
-        // Single marker - add normally
-        const item = group[0];
-        this.addMarker(
-          item.name,
-          item.id,
-          item.type,
-          new LatLng(item.position.lat, item.position.lng),
-          item.color,
-          item
-        );
-      } else {
-        // Multiple markers at same/nearby location - add with spiral offsets
-        this.addClusteredMarkers(group);
-      }
-    });
-  }
-  
-  private addClusteredMarkers(locations: ArchaeologyLocationMap[]): void {
-    // Calculate center position
-    const centerLat = locations.reduce((sum, loc) => sum + loc.position.lat, 0) / locations.length;
-    const centerLng = locations.reduce((sum, loc) => sum + loc.position.lng, 0) / locations.length;
-    
-    // Use a spiral pattern for placing markers
-    // This ensures they're visible but not too far from the actual position
-    const offsetStep = 0.0005; // Small geographic step for marker placement
-    
-    locations.forEach((item, index) => {
-      // Calculate offset using a spiral pattern
-      const angle = index * 0.5; // Gradual angle change
-      const radius = offsetStep * (index + 1); // Gradually increasing radius
-      
-      // Calculate new position
-      const offsetLat = centerLat + radius * Math.cos(angle);
-      const offsetLng = centerLng + radius * Math.sin(angle);
-      
-      // Add marker with offset position
-      this.addMarker(
-        item.name,
-        item.id,
-        item.type,
-        new LatLng(offsetLat, offsetLng),
-        item.color,
-        item
-      );
-      
-      // If this is not the first marker, add a subtle connecting line to center
-      if (index > 0) {
-        this.addClusterConnector([
-          {lat: centerLat, lng: centerLng}, 
-          {lat: offsetLat, lng: offsetLng}
-        ]);
-      }
-    });
-  }
-  
-  private addClusterConnector(points: {lat: number, lng: number}[]): void {
-    // Add a subtle line connecting clustered markers to indicate they belong together
-    const line = new L.Polyline([
-      new LatLng(points[0].lat, points[0].lng),
-      new LatLng(points[1].lat, points[1].lng)
-    ], {
-      color: 'rgba(191, 167, 106, 0.4)',
-      weight: 1,
-      dashArray: '3,3',
-      opacity: 0.6
-    });
-    
-    this.map.addLayer(line);
-    this.initialMap.connections.push(line);
-  }
-  
-  private groupNearbyMarkers(places: ArchaeologyLocationMap[]): { [key: string]: ArchaeologyLocationMap[] } {
-    const proximityThreshold = 0.001; // Approximately 100m at the equator
+  private groupNearbyLocations(locations: ArchaeologyLocationMap[], proximityThreshold: number): { [key: string]: ArchaeologyLocationMap[] } {
     const groups: { [key: string]: ArchaeologyLocationMap[] } = {};
     
-    places.forEach(place => {
+    // Process each location
+    locations.forEach(location => {
+      // Find if this location belongs to an existing group
       let foundGroup = false;
       
-      for (const groupId in groups) {
-        const referencePlace = groups[groupId][0];
-        const distance = this.calculateDistance(
-          place.position.lat, place.position.lng,
-          referencePlace.position.lat, referencePlace.position.lng
-        );
-        
-        if (distance <= proximityThreshold) {
-          groups[groupId].push(place);
+      Object.entries(groups).forEach(([groupId, group]) => {
+        // Check against the first marker in the group
+        if (this.calculateDistance(
+          location.position.lat, location.position.lng,
+          group[0].position.lat, group[0].position.lng
+        ) <= proximityThreshold) {
+          group.push(location);
           foundGroup = true;
-          break;
+          return;
         }
-      }
+      });
       
+      // If no matching group, create a new one
       if (!foundGroup) {
         const groupId = `group_${Object.keys(groups).length}`;
-        groups[groupId] = [place];
+        groups[groupId] = [location];
       }
     });
     
     return groups;
   }
+
+  paintMarkers(places: ArchaeologyLocationMap[]) {
+    // Clear existing markers first
+    if (this.markerClusterGroup) {
+      this.markerClusterGroup.clearLayers();
+    }
+    
+    this.initialMap.markers = [];
+    
+    // Process each place and add it to the cluster group
+    if (places && places.length) {
+      // First, group very close locations to handle overlaps
+      const locationGroups = this.groupNearbyLocations(places, 0.0005); // Very small threshold for exact overlaps
+      
+      // Process each group
+      Object.values(locationGroups).forEach(group => {
+        if (group.length === 1) {
+          // Single marker - add normally
+          const marker = this.createMarker(
+            group[0].name,
+            group[0].id,
+            group[0].type,
+            new LatLng(group[0].position.lat, group[0].position.lng),
+            group[0].color,
+            group[0]
+          );
+          
+          this.initialMap.markers.push(marker);
+          this.markerClusterGroup.addLayer(marker);
+        } else {
+          // Multiple markers at same/similar position - spread them out slightly
+          this.addOffsetMarkers(group);
+        }
+      });
+    }
+  }
   
+  // Add a new method to handle multiple markers at the same position
+  private addOffsetMarkers(locations: ArchaeologyLocationMap[]): void {
+    // Calculate base position (center point)
+    const basePosition = {
+      lat: locations.reduce((sum, loc) => sum + loc.position.lat, 0) / locations.length,
+      lng: locations.reduce((sum, loc) => sum + loc.position.lng, 0) / locations.length
+    };
+    
+    // Calculate offsets in a circle around the base position
+    const radius = 0.0002 + (locations.length * 0.0001); // Dynamic radius based on marker count
+    const angleStep = (2 * Math.PI) / locations.length;
+    
+    locations.forEach((location, index) => {
+      // Calculate offset position in circular pattern
+      const angle = angleStep * index;
+      const offsetLat = basePosition.lat + radius * Math.cos(angle);
+      const offsetLng = basePosition.lng + radius * Math.sin(angle);
+      
+      // Create marker with offset position
+      const marker = this.createMarker(
+        location.name,
+        location.id,
+        location.type,
+        new LatLng(offsetLat, offsetLng),
+        location.color,
+        location
+      );
+      
+      this.initialMap.markers.push(marker);
+      this.markerClusterGroup.addLayer(marker);
+    });
+  }
+  
+  // Helper method to calculate distance between two points
   private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    // Haversine formula to calculate distance between two points
     const R = 6371; // Earth radius in km
-    const dLat = this.toRadians(lat2 - lat1);
-    const dLng = this.toRadians(lng2 - lng1);
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
     
     const a = 
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) * 
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
       Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    
+      
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in km
   }
-  
-  private toRadians(degrees: number): number {
-    return degrees * Math.PI / 180;
+
+  private createMarker(
+    name: string,
+    id: string | number,
+    type: string,
+    point: LatLng,
+    iconType: string,
+    siteData?: ArchaeologyLocationMap
+  ): CustomMarker {
+    const marker = L.marker(point)
+      .setIcon(
+        L.icon({
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          iconUrl: iconType,
+        })
+      )
+      .on('mouseout', (ev) => {
+        if (this.markerSelected?.target) return;
+        this.removeTooltip();
+        this.removeOpacity();
+      })
+      .on('mouseover', (ev: any) => {
+        if (this.markerSelected?.target) return;
+        if (!this.containerParent)
+          this.containerParent = ev.originalEvent.target.parentElement;
+        
+        this.addOpacity();
+      })
+      .on('click', (marker: any) => {
+        this.clickedOnMarker = true;
+        this.idMarker = id.toString();
+        this.containerParent = marker.originalEvent?.target.parentElement || 
+                              marker.target._icon.parentElement;
+        this.clickMarker(marker);
+      }) as CustomMarker;
+
+    marker.customId = id.toString();
+    marker.name = name;
+    marker.type = type;
+    
+    // Add archaeology-specific data to marker
+    if (siteData) {
+      marker.isKnownSite = siteData.isKnownSite;
+      marker.isPossibleArchaeologicalSite = siteData.isPossibleArchaeologicalSite;
+      marker.period = siteData.period;
+      marker.siteType = siteData.siteType;
+      
+      // Add archaeological tooltip with themed display
+      this.bindArchaeologicalTooltip(marker, siteData);
+    }
+    
+    // Add custom CSS class for archaeological markers for styling
+    const icon = marker.getIcon();
+    const oldIconOptions = { ...icon.options, className: this.getMarkerStatusClass(siteData) };
+    // Ensure iconUrl is always a string
+    if (!oldIconOptions.iconUrl) {
+      oldIconOptions.iconUrl = iconType as string;
+    }
+    marker.setIcon(L.icon(oldIconOptions as L.IconOptions));
+    
+    return marker;
   }
 
   removeAllBorderSelected(): void {
@@ -295,24 +403,60 @@ export class ArchaeologicalMapComponent implements OnInit {
   }
 
   removeAllMarkers(): void {
-    // Remove all markers
+    // Clear marker cluster group first
+    if (this.markerClusterGroup) {
+      this.markerClusterGroup.clearLayers();
+    }
+    
+    // Remove individual markers that might not be in clusters
     for (const marker of this.initialMap.markers) {
-      this.map.removeLayer(marker);
+      if (this.map.hasLayer(marker)) {
+        this.map.removeLayer(marker);
+      }
     }
     this.initialMap.markers = [];
 
     // Remove all connection lines
     for (const connection of this.initialMap.connections) {
-      this.map.removeLayer(connection);
+      if (this.map && connection && this.map.hasLayer(connection)) {
+        this.map.removeLayer(connection);
+      }
     }
     this.initialMap.connections = [];
+    
+    // Reset selection state
+    this.markerSelected = null;
+    this.idMarker = '';
   }
 
   centerMapBounds(removeSelected: boolean = true): void {
     if(removeSelected) this.removeAllBorderSelected();
-    const group = L.featureGroup(this.initialMap.markers);
-    this.clickedOnMarker = true;
-    this.map.flyToBounds(group.getBounds(), { maxZoom: 8 });
+    
+    // Fix bounds calculation by using the marker cluster group if it has markers
+    let boundsGroup;
+    if (this.markerClusterGroup && this.markerClusterGroup.getLayers().length > 0) {
+      boundsGroup = this.markerClusterGroup;
+    } else if (this.initialMap.markers.length > 0) {
+      boundsGroup = L.featureGroup(this.initialMap.markers);
+    }
+    
+    if (boundsGroup) {
+      this.clickedOnMarker = true;
+      this.map.flyToBounds(boundsGroup.getBounds(), { maxZoom: 8 });
+    }
+  }
+
+  // New method to completely reset all map layers
+  resetAllLayers(): void {
+    // Remove all markers including clusters
+    this.removeAllMarkers();
+    
+    // Remove all other custom layers that might exist
+    this.map.eachLayer((layer) => {
+      if (layer instanceof L.Polyline || layer instanceof L.Marker) {
+        this.map.removeLayer(layer);
+      }
+    });
   }
 
   public restoreMap(): void {

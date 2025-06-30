@@ -1,0 +1,75 @@
+/* Custom styles for Miniature Earth */
+
+/* Enhanced marker styling */
+.earth-marker {
+  transform-origin: center bottom;
+  transition: all 0.3s ease-out;
+}
+
+.earth-marker:hover {
+  transform: scale(1.2);
+}
+
+/* Custom cluster styling */
+.archaeological-cluster-marker {
+  transform-origin: center center;
+  transition: all 0.3s ease;
+}
+
+.archaeological-cluster-marker:hover {
+  transform: scale(1.1);
+}
+
+/* Custom tooltip styling for archaeological sites */
+.earth-tooltip {
+  background: linear-gradient(to bottom, #f6f1e7, #f0e8d8) !important;
+  border: 1px solid rgba(191, 167, 106, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(139, 107, 53, 0.2) !important;
+  padding: 10px 12px !important;
+  font-family: 'Georgia', serif !important;
+  color: #3e2c18 !important;
+  max-width: 240px !important;
+}
+
+.earth-tooltip-title {
+  font-size: 14px !important;
+  font-weight: bold !important;
+  margin-bottom: 5px !important;
+  color: #8b6b35 !important;
+  border-bottom: 1px solid rgba(191, 167, 106, 0.2) !important;
+  padding-bottom: 4px !important;
+}
+
+.earth-tooltip-content {
+  font-size: 13px !important;
+}
+
+/* Ancient paper texture background for tooltips */
+.earth-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23bfa76a' fill-opacity='0.08' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+/* Custom styling for different site types */
+.earth-heritage-marker {
+  filter: hue-rotate(100deg) saturate(1.2);
+}
+
+.earth-potential-marker {
+  filter: hue-rotate(30deg) saturate(1.5);
+}
+
+/* Enhanced 3D connections */
+.earth-connection {
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(191, 167, 106, 0.5));
+}

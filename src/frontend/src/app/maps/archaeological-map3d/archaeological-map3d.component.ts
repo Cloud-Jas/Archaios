@@ -85,10 +85,49 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
     });
   }
 
+  filterSites(filter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential'): void {
+    this.selectedFilter = filter;
+    
+    // Save the selected filter to localStorage
+    localStorage.setItem('archaios-map3d-filter', filter);
+
+    // First ensure we reset the map's markers without destroying the Earth object
+    this.archaeologicalMap3dService.removeAllMarkersAndConnections();
+
+    // Apply the filter
+    this.applyCurrentFilter();
+    
+    // Use a safer approach with slightly longer delays for Earth.js to catch up
+    setTimeout(() => {
+      // Add markers after filter has been applied
+      this.archaeologicalMap3dService.addMarkers(this.filteredLocations);
+      
+      // Add a small delay before adding connection lines
+      setTimeout(() => {
+        // Force another check for lingering markers before adding connections
+        const stillHasWrongMarkers = document.querySelectorAll('.earth-image, .earth-overlay').length > 
+          this.filteredLocations.length; // We expect one element per filtered location
+        
+        if (stillHasWrongMarkers) {
+          console.warn('Extra markers detected, forcing cleanup before adding connections');
+          this.archaeologicalMap3dService.removeAllMarkersAndConnections();
+          this.archaeologicalMap3dService.addMarkers(this.filteredLocations);
+        }
+        
+        if (filter === 'all' || filter === 'archaios' || filter === 'myupload' || filter === 'potential') {
+          this.archaeologicalMap3dService.showLines(this.filteredConnections);
+        }
+        
+        this.showSideMenu = false; // Close the side menu after filtering
+      }, 300);
+    }, 150);
+  }
+  
   // Helper method to apply the current filter
   private applyCurrentFilter(): void {
     if (this.selectedFilter === 'heritage') {
       this.filteredLocations = this.locations.filter(site => site.isKnownSite);
+      this.filteredConnections = [];
     } else if (this.selectedFilter === 'archaios') {
       this.filteredLocations = this.locations.filter(site => !site.isKnownSite);
       this.filteredConnections = this.connections.filter(connection => {
@@ -112,25 +151,6 @@ export class ArchaeologicalMap3dComponent implements OnInit, AfterViewInit {
 
   toggleSideMenu(): void {
     this.showSideMenu = !this.showSideMenu;
-  }
-
-  filterSites(filter: 'heritage' | 'archaios' | 'all' | 'myupload' | 'potential'): void {
-    this.selectedFilter = filter;
-    
-    // Save the selected filter to localStorage
-    localStorage.setItem('archaios-map3d-filter', filter);
-
-    // Use the common filter application logic
-    this.applyCurrentFilter();
-    
-    this.archaeologicalMap3dService.addMarkers(this.filteredLocations);
-    if (filter === 'all' || filter === 'archaios' || filter === 'myupload' || filter === 'potential') {
-      this.archaeologicalMap3dService.showLines(this.filteredConnections);
-    }
-    
-    setTimeout(() => {
-      this.showSideMenu = false; // Close the side menu after filtering
-    }, 100);
   }
 
   // Add a method to handle site selection

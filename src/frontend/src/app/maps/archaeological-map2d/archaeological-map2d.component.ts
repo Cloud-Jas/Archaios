@@ -278,6 +278,14 @@ export class ArchaeologicalMap2dComponent implements OnInit {
     // Apply the selected filter
     this.applyCurrentFilter();
     
+    // Add a small delay to allow markers to be properly clustered after filtering
+    setTimeout(() => {
+      if (this.map) {
+        // Force cluster recalculation
+        this.map.centerMapBounds(false);
+      }
+    }, 100);
+    
     this.showSideMenu = false;
   }
 }
