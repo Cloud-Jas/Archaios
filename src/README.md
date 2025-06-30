@@ -26,6 +26,138 @@ During my research into how archaeologists handle LiDAR datasets today, one thin
 
 Live Url: https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/2d/bfedafca-8c4b-45ec-aae1-98c752e17a05
 
+# Demo walkthrough video:
+
+https://youtu.be/I9DRuY2fL58
+
+
+# Developer Resources
+
+## Environment Setup and Configuration
+
+To get started with Archaios development, please refer to the following documentation:
+
+- [Local Development Environment Setup](/docs/local_development_setup.md) - Complete guide for setting up DurableHandler, LiDARProcessor, and GeeProcessor
+- [API Documentation](/docs/api_reference.md) - API endpoints and usage examples
+
+## Prerequisites
+
+- Azure Functions Core Tools v4.x
+- .NET 8.0 SDK
+- Python 3.10+
+- Docker Desktop
+- Neo4j Database (local or cloud)
+- Google Earth Engine account with service account credentials
+
+
+# High-level architecture
+
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2Fbea45ee11b4b0cceca5f2ab2c419af82%2FSlide2.JPG?generation=1750701540638043&alt=media)
+
+1️⃣ **Cloud-Native, Event-Driven Architecture**
+Archaios is built fully on Azure’s serverless and container-based services. Data uploads (LiDAR LAS/LAZ files, field reports, journals) trigger event-driven workflows via Azure Blob Storage and Durable Functions.
+
+2️⃣ **Scalable LiDAR Processing Pipeline**
+Durable Functions orchestrate processing jobs, launching Azure Container App Jobs running Python-based LiDAR modules to generate terrain products — DTM, DSM, Hillshade, and Slope models — from raw point clouds.
+
+3️⃣ **Spectral Analysis via Google Earth Engine**
+A sub-orchestrator integrates with Google Earth Engine (GEE), producing NDVI, TrueColor, and FalseColor composites based on geographic coordinates to support environmental and vegetation analysis.
+
+4️⃣ **Multi-Agent Semantic Analysis**
+Processed datasets enter the Semantic Kernel Pipeline. Microsoft’s Semantic Kernel Multi-Agent Framework coordinates virtual agents (Terrain Specialist, Environmental Analyst, Archaeology Analyst) to collaboratively analyze data.
+
+5️⃣ Conversational Knowledge Retrieval with Vector Search
+The system features a chat-based interface that allows users to query accumulated field reports, journals, and historical data. Powered by Azure Cosmos DB's DiskANN vector similarity search, the chat engine retrieves semantically relevant information, enabling archaeologists to have natural conversations with the system and explore historical context interactively.
+
+6️⃣ **Insights Delivery & User Engagement**
+Synthesized findings and site evaluations are surfaced in the Archaios Portal, supported by OpenAI language models for reasoning and summarization. Gamification (leaderboards, notifications) keeps users engaged in collaborative archaeological discovery.
+
+
+## Stage 1 - Data Ingestion & Preprocessing Pipeline
+
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2Fe7484c60032ea7f6f680b0c6d04845f6%2FSlide3.JPG?generation=1750701966252745&alt=media)
+
+1️⃣ **Unified Ingestion Portal**
+Users upload both raw LiDAR data (LAS/LAZ) and supporting research documents (field reports, journals, historical records) directly through the Archaios Portal.
+
+2️⃣ **Scalable LiDAR Upload Handling**
+Large LiDAR files are automatically chunked into smaller parts for efficient streaming into Azure Blob Storage, ensuring reliable uploads even for massive datasets.
+
+3️⃣ **Event-Driven Processing Trigger**
+Once uploads complete, HTTP triggers activate Azure Durable Functions, orchestrating downstream preprocessing pipelines dynamically based on incoming data volume.
+
+4️⃣ **Secure Research Document Storage**
+Text-based research materials are securely stored in Azure Blob Storage alongside LiDAR data, forming a unified data lake for archaeological analysis.
+
+5️⃣ **Semantic Document Indexing**
+A Document Indexer processes uploaded documents, splitting them into smaller sections and generating semantic embeddings using OpenAI’s embedding models.
+
+6️⃣ **Chat-Enabled Knowledge Retrieval**
+Generated embeddings are stored in Azure Cosmos DB with DiskANN indexing, powering Archaios' chat interface, where users can query and retrieve relevant historical context through natural language conversations.
+
+
+## Stage 2 - Processing Pipeline (Azure Durable Workflows)
+
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2Fdefd11ddf2d8009e852a40fe36f70733%2FSlide4.JPG?generation=1750702018451283&alt=media)
+
+Once data ingestion and preprocessing are complete, the Archaios system transitions into the main Processing Pipeline, orchestrated entirely through Azure Durable Functions. This stage is responsible for coordinating all computational workloads across both LiDAR and Spectral processing flows.
+
+**LiDAR Durable Workflow**
+The LiDAR processing flow begins with a Durable Function Orchestration Trigger, which launches a sequence of orchestrated steps:
+
+1️⃣ **Extract LiDAR Metadata:**
+The system first extracts metadata from the uploaded point cloud files, determining parameters such as coordinate reference systems, spatial bounds, and data resolution.
+
+2️⃣ **Initiate Processing:**
+The Durable Function then triggers downstream processing by submitting tasks into the Azure Container Environment, where dedicated LiDAR Processor jobs convert the raw point cloud data into terrain models (DTM, DSM, Hillshade, Slope).
+
+3️⃣ **Wait For External Event:**
+Since the heavy LiDAR processing occurs asynchronously in containers, the Durable Workflow pauses and waits for an external event notification indicating that processing has completed successfully.
+
+4️⃣ **Instantiate LiDAR Node & Sub-Orchestrator:**
+Once processing is complete, a specialized LiDAR Node and GEE Sub-Orchestrator are launched, preparing the data for downstream analysis by the AI multi-agent system.
+
+**Google Earth Engine Durable Workflow**
+
+In parallel, spectral processing is orchestrated via a separate Durable Workflow that integrates with Google Earth Engine (GEE):
+- Upon orchestration trigger, the system fetches relevant satellite imagery based on the coordinates from the LiDAR dataset.
+- It processes multiple spectral products:
+   - NDVI Imagery (for vegetation analysis)
+   - TrueColor Imagery (for visual interpretation)
+   - FalseColor Imagery (for moisture, vegetation, and soil insights)
+Once all imagery products are generated, the corresponding site record is updated with the enriched visual layers.
+
+**Container-Based Processing**
+
+All computationally intensive processing is isolated into the Azure Container Environment, which provides several advantages:
+
+- Dedicated Python-based processors for LiDAR, Raster, and GEE tasks.
+- Event-driven scaling that provisions container instances on demand, processes data, and shuts down automatically after completion.
+- Efficient utilization of compute resources while maintaining complete isolation between concurrent workloads.
+- Support for diverse input formats including LAS/LAZ (LiDAR), TIF/TIFF (rasters), and E57 (point clouds).
+
+# Stage 3 - AI Orchestration with Semantic Kernel Multi-Agent Framework
+
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F59cf6d7fbb105f27a5b124df1c845f83%2FSlide5.JPG?generation=1750702281037373&alt=media)
+
+1️⃣ **Semantic Kernel Multi-Agent Framework**
+Archaios leverages Microsoft's Semantic Kernel Multi-Agent Orchestration to simulate virtual expert collaboration across multiple specialized agents.
+
+2️⃣ **Pre-Analysis Image Analyzer**
+An initial Image Analyzer automatically evaluates processed outputs (DTM, DSM, Hillshade, NDVI, spectral data) to detect terrain anomalies, vegetation patterns, and topographical changes.
+
+3️⃣ **Automated Identification of Areas of Interest**
+The Image Analyzer highlights regions potentially indicating archaeological relevance — such as unnatural elevation patterns or vegetation disturbances — based on geospatial indicators.
+
+4️⃣ **Agent-Led Collaborative Reasoning**
+Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer's findings in combination with historical data.
+
+5️⃣ **Integrated Contextual Knowledge**
+Agents incorporate chat-driven insights from the Cosmos DB DiskANN-powered semantic knowledge base, enriching their assessments with historical context.
+
+6️⃣ **Intelligent Site Evaluation**
+Through iterative reasoning and summarization, the AI agents generate synthesized assessments highlighting promising archaeological sites for human review.
+
 # Technical Highlights: Advanced LiDAR Processing Pipeline
 
 Archaios includes a sophisticated LiDAR processing system with several key technical capabilities:
@@ -221,129 +353,3 @@ The Archaios platform provides comprehensive site analysis capabilities that mer
   - Machine learning classification probability
 
 This comprehensive analytical approach transforms raw data into actionable archaeological insights, enabling researchers to evaluate site significance, prioritize field investigations, and develop preservation strategies based on robust digital evidence.
-
-# High-level architecture
-
-![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2Fbea45ee11b4b0cceca5f2ab2c419af82%2FSlide2.JPG?generation=1750701540638043&alt=media)
-
-1️⃣ **Cloud-Native, Event-Driven Architecture**
-Archaios is built fully on Azure’s serverless and container-based services. Data uploads (LiDAR LAS/LAZ files, field reports, journals) trigger event-driven workflows via Azure Blob Storage and Durable Functions.
-
-2️⃣ **Scalable LiDAR Processing Pipeline**
-Durable Functions orchestrate processing jobs, launching Azure Container App Jobs running Python-based LiDAR modules to generate terrain products — DTM, DSM, Hillshade, and Slope models — from raw point clouds.
-
-3️⃣ **Spectral Analysis via Google Earth Engine**
-A sub-orchestrator integrates with Google Earth Engine (GEE), producing NDVI, TrueColor, and FalseColor composites based on geographic coordinates to support environmental and vegetation analysis.
-
-4️⃣ **Multi-Agent Semantic Analysis**
-Processed datasets enter the Semantic Kernel Pipeline. Microsoft’s Semantic Kernel Multi-Agent Framework coordinates virtual agents (Terrain Specialist, Environmental Analyst, Archaeology Analyst) to collaboratively analyze data.
-
-5️⃣ Conversational Knowledge Retrieval with Vector Search
-The system features a chat-based interface that allows users to query accumulated field reports, journals, and historical data. Powered by Azure Cosmos DB's DiskANN vector similarity search, the chat engine retrieves semantically relevant information, enabling archaeologists to have natural conversations with the system and explore historical context interactively.
-
-6️⃣ **Insights Delivery & User Engagement**
-Synthesized findings and site evaluations are surfaced in the Archaios Portal, supported by OpenAI language models for reasoning and summarization. Gamification (leaderboards, notifications) keeps users engaged in collaborative archaeological discovery.
-
-
-## Stage 1 - Data Ingestion & Preprocessing Pipeline
-
-![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2Fe7484c60032ea7f6f680b0c6d04845f6%2FSlide3.JPG?generation=1750701966252745&alt=media)
-
-1️⃣ **Unified Ingestion Portal**
-Users upload both raw LiDAR data (LAS/LAZ) and supporting research documents (field reports, journals, historical records) directly through the Archaios Portal.
-
-2️⃣ **Scalable LiDAR Upload Handling**
-Large LiDAR files are automatically chunked into smaller parts for efficient streaming into Azure Blob Storage, ensuring reliable uploads even for massive datasets.
-
-3️⃣ **Event-Driven Processing Trigger**
-Once uploads complete, HTTP triggers activate Azure Durable Functions, orchestrating downstream preprocessing pipelines dynamically based on incoming data volume.
-
-4️⃣ **Secure Research Document Storage**
-Text-based research materials are securely stored in Azure Blob Storage alongside LiDAR data, forming a unified data lake for archaeological analysis.
-
-5️⃣ **Semantic Document Indexing**
-A Document Indexer processes uploaded documents, splitting them into smaller sections and generating semantic embeddings using OpenAI’s embedding models.
-
-6️⃣ **Chat-Enabled Knowledge Retrieval**
-Generated embeddings are stored in Azure Cosmos DB with DiskANN indexing, powering Archaios' chat interface, where users can query and retrieve relevant historical context through natural language conversations.
-
-
-## Stage 2 - Processing Pipeline (Azure Durable Workflows)
-
-![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2Fdefd11ddf2d8009e852a40fe36f70733%2FSlide4.JPG?generation=1750702018451283&alt=media)
-
-Once data ingestion and preprocessing are complete, the Archaios system transitions into the main Processing Pipeline, orchestrated entirely through Azure Durable Functions. This stage is responsible for coordinating all computational workloads across both LiDAR and Spectral processing flows.
-
-**LiDAR Durable Workflow**
-The LiDAR processing flow begins with a Durable Function Orchestration Trigger, which launches a sequence of orchestrated steps:
-
-1️⃣ **Extract LiDAR Metadata:**
-The system first extracts metadata from the uploaded point cloud files, determining parameters such as coordinate reference systems, spatial bounds, and data resolution.
-
-2️⃣ **Initiate Processing:**
-The Durable Function then triggers downstream processing by submitting tasks into the Azure Container Environment, where dedicated LiDAR Processor jobs convert the raw point cloud data into terrain models (DTM, DSM, Hillshade, Slope).
-
-3️⃣ **Wait For External Event:**
-Since the heavy LiDAR processing occurs asynchronously in containers, the Durable Workflow pauses and waits for an external event notification indicating that processing has completed successfully.
-
-4️⃣ **Instantiate LiDAR Node & Sub-Orchestrator:**
-Once processing is complete, a specialized LiDAR Node and GEE Sub-Orchestrator are launched, preparing the data for downstream analysis by the AI multi-agent system.
-
-**Google Earth Engine Durable Workflow**
-
-In parallel, spectral processing is orchestrated via a separate Durable Workflow that integrates with Google Earth Engine (GEE):
-- Upon orchestration trigger, the system fetches relevant satellite imagery based on the coordinates from the LiDAR dataset.
-- It processes multiple spectral products:
-   - NDVI Imagery (for vegetation analysis)
-   - TrueColor Imagery (for visual interpretation)
-   - FalseColor Imagery (for moisture, vegetation, and soil insights)
-Once all imagery products are generated, the corresponding site record is updated with the enriched visual layers.
-
-**Container-Based Processing**
-
-All computationally intensive processing is isolated into the Azure Container Environment, which provides several advantages:
-
-- Dedicated Python-based processors for LiDAR, Raster, and GEE tasks.
-- Event-driven scaling that provisions container instances on demand, processes data, and shuts down automatically after completion.
-- Efficient utilization of compute resources while maintaining complete isolation between concurrent workloads.
-- Support for diverse input formats including LAS/LAZ (LiDAR), TIF/TIFF (rasters), and E57 (point clouds).
-
-# Stage 3 - AI Orchestration with Semantic Kernel Multi-Agent Framework
-
-![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F59cf6d7fbb105f27a5b124df1c845f83%2FSlide5.JPG?generation=1750702281037373&alt=media)
-
-1️⃣ **Semantic Kernel Multi-Agent Framework**
-Archaios leverages Microsoft's Semantic Kernel Multi-Agent Orchestration to simulate virtual expert collaboration across multiple specialized agents.
-
-2️⃣ **Pre-Analysis Image Analyzer**
-An initial Image Analyzer automatically evaluates processed outputs (DTM, DSM, Hillshade, NDVI, spectral data) to detect terrain anomalies, vegetation patterns, and topographical changes.
-
-3️⃣ **Automated Identification of Areas of Interest**
-The Image Analyzer highlights regions potentially indicating archaeological relevance — such as unnatural elevation patterns or vegetation disturbances — based on geospatial indicators.
-
-4️⃣ **Agent-Led Collaborative Reasoning**
-Specialized agents — including Terrain Specialists, Environmental Analysts, and Archaeology Analysts — analyze the Image Analyzer's findings in combination with historical data.
-
-5️⃣ **Integrated Contextual Knowledge**
-Agents incorporate chat-driven insights from the Cosmos DB DiskANN-powered semantic knowledge base, enriching their assessments with historical context.
-
-6️⃣ **Intelligent Site Evaluation**
-Through iterative reasoning and summarization, the AI agents generate synthesized assessments highlighting promising archaeological sites for human review.
-
-# Developer Resources
-
-## Environment Setup and Configuration
-
-To get started with Archaios development, please refer to the following documentation:
-
-- [Local Development Environment Setup](../docs/local_development_setup.md) - Complete guide for setting up DurableHandler, LiDARProcessor, and GeeProcessor
-- [API Documentation](../docs/api_reference.md) - API endpoints and usage examples
-
-## Prerequisites
-
-- Azure Functions Core Tools v4.x
-- .NET 8.0 SDK
-- Python 3.10+
-- Docker Desktop
-- Neo4j Database (local or cloud)
-- Google Earth Engine account with service account credentials
