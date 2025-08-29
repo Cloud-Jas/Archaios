@@ -20,11 +20,46 @@ During my research into how archaeologists handle LiDAR datasets today, one thin
 ⚡ **Open data blending** — LiDAR + satellite + semantic knowledge + graph relationships.</br>
 ⚡ **Gamified engagement** — explorers and archaeologists can contribute discoveries through a leaderboard, making the experience both serious and fun.</br>
 
-# Findings:
+# Archaeological Findings
 
-![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F16585359%2F0482f6ae5232dfc351cf4f4dfab640e4%2Fhillshade%20(15).png?generation=1751138011286525&alt=media)
+Our AI-powered analysis has identified several types of archaeological sites based on LiDAR and spectral data. Below are the key categories of findings with representative examples:
 
-Live Url: https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/2d/bfedafca-8c4b-45ec-aae1-98c752e17a05
+## Henge Monuments
+Circular prehistoric earthworks typically consisting of a bank with an internal ditch and one or more entrances.
+
+![Henge Monument Introduction](docs/Archaios/Findings/henge_monument_intro.PNG)
+
+![Henge Monument Site Example](docs/Archaios/Findings/henge_monument_site.PNG)
+
+## Burial Mounds
+Raised earth structures covering graves or burial chambers, often appearing as distinctive bumps or hills in the landscape.
+
+![Burial Mounds Introduction](docs/Archaios/Findings/mounds_intro.PNG)
+
+![Burial Mounds Site Example](docs/Archaios/Findings/mounds_site.PNG)
+
+## Oval Enclosures
+Oval-shaped ditched or banked enclosures that often served ceremonial, settlement, or defensive purposes.
+
+![Oval Enclosure Introduction](docs/Archaios/Findings/oval_enclosure_intro.PNG)
+
+![Oval Enclosure Site Example](docs/Archaios/Findings/oval_enclosure_site.PNG)
+
+## Rectilinear Enclosures
+Square or rectangular earthworks that typically indicate planned settlements, field systems, or ritual spaces.
+
+![Rectilinear Enclosure Introduction](docs/Archaios/Findings/rectilinear_enclosure_intro.PNG)
+
+![Rectilinear Enclosure Site Example](docs/Archaios/Findings/rectilinear_enclosure_site.PNG)
+
+## Other Archaeological Features
+Additional significant archaeological features identified through our analysis include various structures and landscape modifications.
+
+![Other Features Introduction](docs/Archaios/Findings/others_intro.PNG)
+
+![Other Features Site Example](docs/Archaios/Findings/others_site.PNG)
+
+Live Demo: https://archaios-fphhghfjdbf8dmbz.centralindia-01.azurewebsites.net/2d/bfedafca-8c4b-45ec-aae1-98c752e17a05
 
 # Demo walkthrough video:
 
